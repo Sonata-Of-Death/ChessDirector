@@ -1,0 +1,1498 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monolith Chess Director | V1.0 BETA</title>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        monolith: {
+                            blue: '#00A9FF',
+                            orange: '#FF6F00',
+                            bg: 'var(--m-bg)',
+                            panel: 'var(--m-panel)',
+                            border: 'var(--m-border)',
+                            text: 'var(--m-text)',
+                            sub: 'var(--m-text-sub)',
+                            danger: '#ef4444',
+                            success: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['var(--m-font-main)'],
+                        mono: ['JetBrains Mono', 'monospace']
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.4s ease-out',
+                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'slide-in-right': 'slideInRight 0.3s ease-out'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        :root {
+            /* DARK MODE (Default Monolith) */
+            --m-bg: #09090b;
+            --m-panel: #18181b;
+            --m-border: #27272a;
+            --m-text: #f4f4f5;
+            --m-text-sub: #a1a1aa;
+            --m-hover: rgba(255, 255, 255, 0.03);
+            --m-input-bg: #09090b;
+            --m-font-main: 'Inter', sans-serif;
+            --m-font-ar: 'Cairo', sans-serif;
+        }
+
+        .light-mode {
+            /* LIGHT MODE */
+            --m-bg: #f4f4f5;
+            --m-panel: #ffffff;
+            --m-border: #d4d4d8;
+            --m-text: #18181b;
+            --m-text-sub: #52525b;
+            --m-hover: rgba(0, 0, 0, 0.05);
+            --m-input-bg: #ffffff;
+        }
+
+        body {
+            background-color: var(--m-bg);
+            color: var(--m-text);
+            height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        body[dir="rtl"] {
+            font-family: var(--m-font-ar);
+        }
+
+        .data-grid {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            font-size: 0.9rem;
+        }
+
+        .data-grid th {
+            background: var(--m-panel);
+            color: #00A9FF;
+            font-weight: 700;
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--m-border);
+            border-top: 1px solid var(--m-border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            text-align: inherit;
+        }
+
+        .data-grid td {
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--m-border);
+            color: var(--m-text);
+            transition: background 0.2s;
+        }
+
+        .data-grid tr {
+            transition: transform 0.2s;
+        }
+
+        .data-grid tr:hover td {
+            background-color: var(--m-hover);
+            cursor: pointer;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 6px;
+            color: var(--m-text-sub);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-bottom: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .nav-item:hover {
+            background: var(--m-border);
+            color: var(--m-text);
+            transform: translateX(4px);
+        }
+
+        .nav-item.active {
+            background: rgba(0, 169, 255, 0.1);
+            color: #00A9FF;
+            border-inline-end: 3px solid #00A9FF;
+            font-weight: 600;
+        }
+
+        .btn-primary {
+            background-color: #00A9FF;
+            color: #fff;
+            font-weight: 700;
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.3s;
+            box-shadow: 0 4px 14px 0 rgba(0, 169, 255, 0.39);
+        }
+
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(0, 169, 255, 0.23);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background-color: var(--m-panel);
+            border: 1px solid var(--m-border);
+            color: var(--m-text);
+            padding: 8px 16px;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--m-border);
+            transform: translateY(-1px);
+        }
+
+        .m-input {
+            background-color: var(--m-input-bg);
+            border: 1px solid var(--m-border);
+            color: var(--m-text);
+            padding: 8px 12px;
+            border-radius: 6px;
+            outline: none;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .m-input:focus {
+            border-color: #00A9FF;
+            box-shadow: 0 0 0 3px rgba(0, 169, 255, 0.1);
+        }
+
+        .m-dropdown {
+            position: relative;
+            user-select: none;
+        }
+
+        .m-dropdown-head {
+            background-color: var(--m-input-bg);
+            border: 1px solid var(--m-border);
+            color: var(--m-text);
+            padding: 10px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .m-dropdown-head:hover {
+            border-color: var(--m-text-sub);
+        }
+
+        .m-dropdown-body {
+            position: absolute;
+            top: 110%;
+            left: 0;
+            width: 100%;
+            z-index: 50;
+            background-color: var(--m-panel);
+            border: 1px solid var(--m-border);
+            border-radius: 6px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.95);
+            pointer-events: none;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .m-dropdown.open .m-dropdown-body {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+
+        .m-dropdown-item {
+            padding: 10px 12px;
+            cursor: pointer;
+            color: var(--m-text);
+            transition: background 0.1s;
+        }
+
+        .m-dropdown-item:hover {
+            background-color: rgba(0, 169, 255, 0.1);
+            color: #00A9FF;
+        }
+
+        .m-dropdown-item.selected {
+            background-color: #00A9FF;
+            color: white;
+        }
+
+        .btn-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: var(--m-text-sub);
+            background: var(--m-panel);
+            border: 1px solid var(--m-border);
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover {
+            color: #00A9FF;
+            border-color: #00A9FF;
+            transform: rotate(5deg);
+        }
+
+        .btn-action {
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            color: var(--m-text-sub);
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background: var(--m-border);
+            color: var(--m-text);
+            transform: scale(1.1);
+        }
+
+        .btn-action.danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--m-bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--m-border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--m-text-sub);
+        }
+
+        .match-card {
+            background: var(--m-panel);
+            border: 1px solid var(--m-border);
+            border-radius: 8px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .match-card:hover {
+            border-color: #00A9FF;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .match-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: #00A9FF;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .match-card:hover::after {
+            opacity: 1;
+        }
+
+        .score-btn {
+            height: 32px;
+            padding: 0 16px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--m-border);
+            background: var(--m-bg);
+            color: var(--m-text-sub);
+            transition: all 0.2s;
+        }
+
+        .score-btn:first-child {
+            border-radius: 6px 0 0 6px;
+        }
+
+        .score-btn:last-child {
+            border-radius: 0 6px 6px 0;
+            border-inline-start: none;
+        }
+
+        .score-btn:not(:first-child):not(:last-child) {
+            border-inline-start: none;
+        }
+
+        .score-btn:hover {
+            background: var(--m-border);
+            color: var(--m-text);
+        }
+
+        .score-btn.win-white:hover,
+        .score-btn.active-white {
+            background: rgba(0, 169, 255, 0.15);
+            color: #00A9FF;
+            border-color: #00A9FF;
+            z-index: 1;
+        }
+
+        .score-btn.win-black:hover,
+        .score-btn.active-black {
+            background: rgba(255, 111, 0, 0.15);
+            color: #FF6F00;
+            border-color: #FF6F00;
+            z-index: 1;
+        }
+
+        .score-btn.draw:hover,
+        .score-btn.active-draw {
+            background: #27272a;
+            color: white;
+            border-color: #52525b;
+            z-index: 1;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useRef } = React;
+
+        // --- ICONS ---
+        const Icon = ({ p, s = 18, c = "currentColor" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{p}</svg>);
+        const I = {
+            Users: <Icon p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></>} />,
+            List: <Icon p={<><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></>} />,
+            Trophy: <Icon p={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M8 22v-4c0-2.5 2.5-4 4-4s4 1.5 4 4v4"></path><path d="M12 2v6"></path></>} />,
+            Play: <Icon p={<polygon points="5 3 19 12 5 21 5 3"></polygon>} />,
+            Save: <Icon p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></>} />,
+            Upload: <Icon p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></>} />,
+            Image: <Icon p={<><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></>} />,
+            X: <Icon p={<><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></>} />,
+            Sun: <Icon p={<><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></>} />,
+            Moon: <Icon p={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>} />,
+            Chevron: <Icon p={<polyline points="6 9 12 15 18 9"></polyline>} />,
+            Edit: <Icon p={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></>} s={14} />,
+            Trash: <Icon p={<><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></>} s={14} />,
+            Skull: <Icon p={<><path d="M12.8 2.2a6 6 0 0 0-1.6 0"></path><circle cx="12" cy="10" r="1.5"></circle><path d="M22 10c0 5-2.7 7-6 7h-1v4h-6v-4H8c-3.3 0-6-2-6-7a9.2 9.2 0 0 1 1.7-5.4A8 8 0 0 1 12 2a8 8 0 0 1 8.3 2.6A9.2 9.2 0 0 1 22 10Z"></path></>} s={14} />,
+            File: <Icon p={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></>} s={14} />,
+            Check: <Icon p={<polyline points="20 6 9 17 4 12"></polyline>} />
+        };
+
+        const DICT = {
+            en: {
+                settings: "Settings & Players", pairings: "Rounds & Matches", standings: "Standings",
+                save: "Save (JSON)", load: "Load (JSON)", tour_name: "Tournament Name",
+                sys_type: "System Type", tie_break: "Tie-Break System",
+                swiss: "Swiss System", knockout: "Knockout", rr: "Round Robin", drr: "Double Round Robin",
+                buchholz: "Buchholz", bh_cut1: "Buchholz Cut-1", sonneborn: "Sonneborn-Berger", direct: "Direct Encounter",
+                pl_name: "Player Name", country: "Country", rating: "ELO", title: "Title", add: "Add", actions: "Actions",
+                rank: "Rank", name: "Player", games: "G", pts: "Pts",
+                start: "Start Tournament", next: "Generate Next", round: "Round",
+                win: "Win", loss: "Loss", draw: "Draw", export: "Export Report (Image)", export_pair: "Export Pairings",
+                rounds_count: "Total Rounds",
+                finish_alert: "Finish all matches first!", over_alert: "Tournament Complete!", round_limit: "Max rounds reached!",
+                ko_draw_error: "Knockout draws must be manually resolved (Armageddon) before advancing!",
+                desc_bh: "Sums scores of opponents played.",
+                desc_bh_cut1: "Sums scores of opponents played (excluding the lowest).",
+                desc_sb: "Sums scores of beaten opponents + half of drawn.",
+                desc_de: "Head-to-head result determines the tie.",
+                edit_player: "Edit Player", update: "Update", cancel: "Cancel",
+                start_prompt: "Opening Protocol",
+                start_q: "How do you want to determine the color distribution in the first round?",
+                opt_white: "Highest Rated Player plays WHITE", opt_black: "Highest Rated Player plays BLACK", opt_rand: "Randomize",
+                exclude_title: "Disqualify Player",
+                is_cheating: "Is the disqualification due to CHEATING?",
+                upload_report: "Upload Report (PDF)",
+                reason_label: "Reason for disqualification",
+                confirm_ban: "CONFIRM BAN", confirm_withdraw: "CONFIRM WITHDRAWAL",
+                status_banned: "BANNED", status_withdrawn: "Withdrawn",
+                export_btn: "Download Standings Report"
+            },
+            ar: {
+                settings: "الإعدادات واللاعبين", pairings: "الجولات والمباريات", standings: "الترتيب العام",
+                save: "حفظ (JSON)", load: "استرجاع (JSON)", tour_name: "اسم البطولة",
+                sys_type: "نظام البطولة", tie_break: "نظام كسر التعادل",
+                swiss: "النظام السويسري", knockout: "خروج المغلوب", rr: "دوري (ذهاب)", drr: "دوري (ذهاب وإياب)",
+                buchholz: "بوخولز العادي", bh_cut1: "بوخولز (حذف الأسوأ)", sonneborn: "سونبورن-بيرجر", direct: "المواجهة المباشرة",
+                pl_name: "اسم اللاعب", country: "الدولة", rating: "التقييم", title: "اللقب", add: "إضافة", actions: "إجراءات",
+                rank: "م", name: "اللاعب", games: "لعب", pts: "ن",
+                start: "بدء البطولة", next: "إنشاء الجولة", round: "جولة",
+                win: "فوز", loss: "خسارة", draw: "تعادل", export: "تصدير التقرير (صورة)", export_pair: "تصدير الجدول",
+                rounds_count: "عدد الجولات",
+                finish_alert: "يجب إنهاء جميع المباريات أولاً!", over_alert: "انتهت البطولة!", round_limit: "تم الوصول للحد الأقصى للجولات!",
+                ko_draw_error: "لا يمكن الانتقال للجولة التالية بوجود تعادل في خروج المغلوب. يجب حسمه (أرمجدون) يدوياً!",
+                desc_bh: "يجمع نقاط كل الخصوم الذين واجههم اللاعب.",
+                desc_bh_cut1: "يجمع نقاط الخصوم باستثناء أضعف خصم (أقلهم نقاطاً).",
+                desc_sb: "يجمع نقاط الخصوم المغلوبين + نصف متعادلين.",
+                desc_de: "المواجهة المباشرة تحسم التعادل.",
+                edit_player: "تعديل بيانات اللاعب", update: "تحديث", cancel: "إلغاء",
+                start_prompt: "بروتوكول الافتتاح",
+                start_q: "كيف تريد تحديد توزيع الألوان في الجولة الأولى؟",
+                opt_white: "الأعلى تقييماً يلعب أبيض", opt_black: "الأعلى تقييماً يلعب أسود", opt_rand: "توزيع عشوائي",
+                exclude_title: "إقصاء اللاعب",
+                is_cheating: "هل سبب الإقصاء هو الغش؟",
+                upload_report: "رفع التقرير (PDF)",
+                reason_label: "سبب الإقصاء/الانسحاب",
+                confirm_ban: "تأكيد الحظر (BAN)", confirm_withdraw: "تأكيد الانسحاب",
+                status_banned: "تم إقصاؤه (غش)", status_withdrawn: "منسحب",
+                export_btn: "تحميل تقرير الترتيب"
+            }
+        };
+
+        const generateUUID = () => Math.random().toString(36).substr(2, 9);
+
+        const TITLE_RANKS = { 'GM': 8, 'WGM': 7, 'IM': 6, 'WIM': 5, 'FM': 4, 'WFM': 3, 'CM': 2, 'WCM': 1, '': 0 };
+
+        // --- ENGINES V1.8: TERMINAL ---
+        const pairSwiss = (players, rounds, colorSeed) => {
+            let pool = [...players];
+            pool.sort((a, b) => b.score - a.score || b.rating - a.rating || TITLE_RANKS[b.title || ''] - TITLE_RANKS[a.title || ''] || (a.name || '').localeCompare(b.name || ''));
+
+            let pairs = [];
+            let pairedIds = new Set();
+
+            if (rounds.length === 0) {
+                const mid = Math.ceil(pool.length / 2);
+                const top = pool.slice(0, mid);
+                const bottom = pool.slice(mid);
+                let topPlaysWhite = true;
+                if (colorSeed === 'black') topPlaysWhite = false;
+                else if (colorSeed === 'random') topPlaysWhite = Math.random() > 0.5;
+
+                for (let i = 0; i < top.length; i++) {
+                    const p1 = top[i];
+                    const p2 = bottom[i] || null;
+                    if (p2) {
+                        let boardWhite = (i % 2 === 0) ? topPlaysWhite : !topPlaysWhite;
+                        pairs.push({ id: generateUUID(), white: boardWhite ? p1 : p2, black: boardWhite ? p2 : p1, result: null });
+                    } else {
+                        pairs.push({ id: generateUUID(), white: p1, black: null, result: '1-0', isBye: true });
+                        p1.hasBye = true;
+                    }
+                }
+                return pairs;
+            }
+
+            let scoreGroups = {};
+            pool.forEach(p => {
+                if (pairedIds.has(p.id)) return;
+                const s = p.score;
+                if (!scoreGroups[s]) scoreGroups[s] = [];
+                scoreGroups[s].push(p);
+            });
+
+            let uniqueScores = Object.keys(scoreGroups).map(Number).sort((a, b) => b - a);
+
+            for (let i = 0; i < uniqueScores.length; i++) {
+                let score = uniqueScores[i];
+                let group = scoreGroups[score];
+                let nextScore = (i < uniqueScores.length - 1) ? uniqueScores[i + 1] : null;
+
+                const isValidMatch = (p1, p2, relaxRules = false) => {
+                    if (p1.history.some(h => h.oppId === p2.id)) return false;
+                    if (!relaxRules) {
+                        if (p1.score !== p2.score) {
+                            let downFloater = p1.score > p2.score ? p1 : p2;
+                            let upFloater = p1.score < p2.score ? p1 : p2;
+                            if (downFloater.floatHistory === 'D') return false;
+                            if (upFloater.floatHistory === 'U') return false;
+                        }
+                    }
+                    return true;
+                };
+
+                const assignColors = (p1, p2) => {
+                    let p1W = p1.colorHistory.filter(c => c === 'W').length, p1B = p1.colorHistory.length - p1W;
+                    let p2W = p2.colorHistory.filter(c => c === 'W').length, p2B = p2.colorHistory.length - p2W;
+                    let p1Streak = p1.colorHistory.slice(-2).join(''), p2Streak = p2.colorHistory.slice(-2).join('');
+
+                    let p1MustBlack = (p1Streak === 'WW') || ((p1W - p1B) >= 2);
+                    let p1MustWhite = (p1Streak === 'BB') || ((p1B - p1W) >= 2);
+                    let p2MustBlack = (p2Streak === 'WW') || ((p2W - p2B) >= 2);
+                    let p2MustWhite = (p2Streak === 'BB') || ((p2B - p2W) >= 2);
+
+                    if (p1MustWhite || p2MustBlack) return true;
+                    if (p1MustBlack || p2MustWhite) return false;
+                    if (p1W > p2W) return false;
+                    if (p2W > p1W) return true;
+                    return p1.colorHistory[p1.colorHistory.length - 1] !== 'W';
+                };
+
+                const findDutchPairing = (s1, s2, currentPairs, relaxColors = false) => {
+                    if (s1.length === 0) return { pairs: currentPairs, penalty: 0 };
+                    let p1 = s1[0];
+                    let bestRes = null;
+                    let minPenalty = Infinity;
+
+                    for (let j = 0; j < s2.length; j++) {
+                        let p2 = s2[j];
+                        if (isValidMatch(p1, p2, relaxColors)) {
+                            let remS1 = s1.slice(1);
+                            let remS2 = [...s2]; remS2.splice(j, 1);
+
+                            // Check strong color constraint validity before assigning if not relaxed
+                            let p1W = p1.colorHistory.filter(c => c === 'W').length, p1B = p1.colorHistory.length - p1W;
+                            let p2W = p2.colorHistory.filter(c => c === 'W').length, p2B = p2.colorHistory.length - p2W;
+                            let p1Streak = p1.colorHistory.slice(-2).join(''), p2Streak = p2.colorHistory.slice(-2).join('');
+
+                            let p1MustBlack = (p1Streak === 'WW') || ((p1W - p1B) >= 2);
+                            let p1MustWhite = (p1Streak === 'BB') || ((p1B - p1W) >= 2);
+                            let p2MustBlack = (p2Streak === 'WW') || ((p2W - p2B) >= 2);
+                            let p2MustWhite = (p2Streak === 'BB') || ((p2B - p2W) >= 2);
+
+                            let canPlayColored = true;
+                            let currentPenalty = 0;
+                            if ((p1MustWhite && p2MustWhite) || (p1MustBlack && p2MustBlack)) {
+                                canPlayColored = relaxColors;
+                                currentPenalty += 10; // FIDE strict penalty
+                            }
+
+                            if (relaxColors && p1.score !== p2.score) {
+                                let downF = p1.score > p2.score ? p1 : p2;
+                                let upF = p1.score < p2.score ? p1 : p2;
+                                if (downF.floatHistory === 'D') currentPenalty += 5;
+                                if (upF.floatHistory === 'U') currentPenalty += 5;
+                            }
+
+                            if (canPlayColored) {
+                                let p1White = assignColors(p1, p2);
+                                let match = { id: generateUUID(), white: p1White ? p1 : p2, black: p1White ? p2 : p1, result: null };
+                                let res = findDutchPairing(remS1, remS2, currentPairs.concat([match]), relaxColors);
+                                if (res) {
+                                    if (!relaxColors) return res;
+                                    let totalPenalty = currentPenalty + res.penalty;
+                                    if (totalPenalty < minPenalty) {
+                                        minPenalty = totalPenalty;
+                                        bestRes = { pairs: res.pairs, penalty: totalPenalty };
+                                        if (minPenalty === 0) return bestRes;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return bestRes;
+                };
+
+                const findAnyPairing = (unpaired, currentPairs, relaxColors = false) => {
+                    if (unpaired.length === 0) return { pairs: currentPairs, penalty: 0 };
+                    let p1 = unpaired[0];
+                    let bestRes = null;
+                    let minPenalty = Infinity;
+
+                    for (let j = 1; j < unpaired.length; j++) {
+                        let p2 = unpaired[j];
+                        if (isValidMatch(p1, p2, relaxColors)) {
+                            let currentPenalty = 0;
+                            let canPlayColored = true;
+                            let p1W = p1.colorHistory.filter(c => c === 'W').length, p1B = p1.colorHistory.length - p1W;
+                            let p2W = p2.colorHistory.filter(c => c === 'W').length, p2B = p2.colorHistory.length - p2W;
+                            let p1Streak = p1.colorHistory.slice(-2).join(''), p2Streak = p2.colorHistory.slice(-2).join('');
+                            let p1MustBlack = (p1Streak === 'WW') || ((p1W - p1B) >= 2);
+                            let p1MustWhite = (p1Streak === 'BB') || ((p1B - p1W) >= 2);
+                            let p2MustBlack = (p2Streak === 'WW') || ((p2W - p2B) >= 2);
+                            let p2MustWhite = (p2Streak === 'BB') || ((p2B - p2W) >= 2);
+                            if ((p1MustWhite && p2MustWhite) || (p1MustBlack && p2MustBlack)) {
+                                canPlayColored = relaxColors;
+                                currentPenalty += 10;
+                            }
+
+                            if (relaxColors && p1.score !== p2.score) {
+                                let downF = p1.score > p2.score ? p1 : p2;
+                                let upF = p1.score < p2.score ? p1 : p2;
+                                if (downF.floatHistory === 'D') currentPenalty += 5;
+                                if (upF.floatHistory === 'U') currentPenalty += 5;
+                            }
+
+                            if (canPlayColored) {
+                                let rem = unpaired.slice(1); rem.splice(j - 1, 1);
+                                let p1White = assignColors(p1, p2);
+                                let match = { id: generateUUID(), white: p1White ? p1 : p2, black: p1White ? p2 : p1, result: null };
+                                let res = findAnyPairing(rem, currentPairs.concat([match]), relaxColors);
+                                if (res) {
+                                    if (!relaxColors) return res;
+                                    let totalPenalty = currentPenalty + res.penalty;
+                                    if (totalPenalty < minPenalty) {
+                                        minPenalty = totalPenalty;
+                                        bestRes = { pairs: res.pairs, penalty: totalPenalty };
+                                        if (minPenalty === 0) return bestRes;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    return bestRes;
+                };
+
+                const getPairingForUnpaired = (unpaired, relaxColors = false) => {
+                    let mid = Math.floor(unpaired.length / 2);
+                    let res = findDutchPairing(unpaired.slice(0, mid), unpaired.slice(mid), [], relaxColors);
+                    let finalRes = res ? res : findAnyPairing(unpaired, [], relaxColors);
+                    return finalRes ? finalRes.pairs : null;
+                };
+
+                let validPairing = null, floaterPicked = null;
+
+                const tryFloaters = (checkCondition, relax) => {
+                    for (let f = group.length - 1; f >= 0; f--) {
+                        if (!checkCondition(group[f])) continue;
+                        let unpaired = [...group]; unpaired.splice(f, 1);
+                        let res = getPairingForUnpaired(unpaired, relax);
+                        if (res) { validPairing = res; floaterPicked = group[f]; return true; }
+                    }
+                    return false;
+                };
+
+                if (group.length % 2 !== 0) {
+                    if (nextScore !== null) {
+                        // Level 1: Strict Check. Don't pull a Down-floater who was repeatedly down-floated.
+                        if (!tryFloaters(p => p.floatHistory !== 'D', false)) {
+                            if (!tryFloaters(() => true, false)) {
+                                // Level 2: Relaxed Colors Check
+                                if (!tryFloaters(p => p.floatHistory !== 'D', true)) {
+                                    tryFloaters(() => true, true);
+                                }
+                            }
+                        }
+                    } else {
+                        if (!tryFloaters(p => !p.hasBye, false)) {
+                            if (!tryFloaters(() => true, false)) {
+                                if (!tryFloaters(p => !p.hasBye, true)) {
+                                    tryFloaters(() => true, true);
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    validPairing = getPairingForUnpaired(group, false);
+                    if (!validPairing) validPairing = getPairingForUnpaired(group, true);
+                }
+
+                if (!validPairing) {
+                    if (group.length > 2 && nextScore !== null) {
+                        let pA = group.pop(), pB = group.pop();
+                        scoreGroups[nextScore].unshift(pA, pB);
+
+                        // Retry with the rest of the group
+                        validPairing = getPairingForUnpaired(group, false);
+                        if (!validPairing) validPairing = getPairingForUnpaired(group, true);
+                        if (!validPairing) validPairing = [];
+
+                    } else if (group.length <= 2 && nextScore !== null) {
+                        scoreGroups[nextScore].unshift(...group);
+                        validPairing = [];
+                    } else {
+                        validPairing = [];
+                    }
+                }
+
+                if (validPairing) {
+                    validPairing.forEach(m => {
+                        pairs.push(m);
+                        pairedIds.add(m.white.id);
+                        if (m.black) pairedIds.add(m.black.id);
+                    });
+                }
+
+                if (floaterPicked) {
+                    if (nextScore !== null) {
+                        scoreGroups[nextScore].unshift(floaterPicked);
+                    } else {
+                        // Only give BYE if it wasn't paired previously
+                        if (!pairedIds.has(floaterPicked.id)) {
+                            floaterPicked.hasBye = true;
+                            pairs.push({ id: generateUUID(), white: floaterPicked, black: null, result: '1-0', isBye: true });
+                            pairedIds.add(floaterPicked.id);
+                        }
+                    }
+                }
+            }
+            return pairs;
+        };
+
+        const pairKnockout = (players, rounds, colorSeed) => {
+            let pool = [...players];
+
+            if (rounds.length === 0) {
+                let sorted = [...pool].sort((a, b) => b.rating - a.rating);
+                let p2count = Math.pow(2, Math.ceil(Math.log2(sorted.length)));
+                if (p2count < 2) p2count = 2;
+
+                let bracket = [1, 2];
+                for (let r = 1; r < Math.log2(p2count); r++) {
+                    let nextBracket = [];
+                    let sum = Math.pow(2, r + 1) + 1;
+                    for (let i = 0; i < bracket.length; i++) {
+                        nextBracket.push(bracket[i]);
+                        nextBracket.push(sum - bracket[i]);
+                    }
+                    bracket = nextBracket;
+                }
+
+                let pairs = [];
+                let topPlaysWhite = colorSeed !== 'black' && (colorSeed !== 'random' || Math.random() > 0.5);
+
+                for (let i = 0; i < bracket.length; i += 2) {
+                    let p1Seed = bracket[i] - 1;
+                    let p2Seed = bracket[i + 1] - 1;
+                    let p1 = sorted[p1Seed] || null;
+                    let p2 = sorted[p2Seed] || null;
+
+                    let currentBoardWhite = (i / 2) % 2 === 0 ? topPlaysWhite : !topPlaysWhite;
+
+                    if (p1 && p2) {
+                        pairs.push({ id: generateUUID(), white: currentBoardWhite ? p1 : p2, black: currentBoardWhite ? p2 : p1, result: null });
+                    } else if (p1 || p2) {
+                        let active = p1 || p2;
+                        pairs.push({ id: generateUUID(), white: active, black: null, result: '1-0', isBye: true });
+                    }
+                }
+                return pairs;
+            }
+
+            let winners = [];
+            rounds[rounds.length - 1].pairings.forEach(m => {
+                if (m.result === '1-0' || m.result === 'BYE') winners.push(m.white);
+                else if (m.result === '0-1') winners.push(m.black);
+            });
+
+            if (winners.length < 2) return null;
+
+            let pairs = [];
+            for (let i = 0; i < winners.length; i += 2) {
+                let p1 = winners[i]; let p2 = winners[i + 1];
+                if (p2) {
+                    let p1W = p1.colorHistory.filter(c => c === 'W').length;
+                    let p1B = p1.colorHistory.length - p1W;
+                    let p2W = p2.colorHistory.filter(c => c === 'W').length;
+                    let p2B = p2.colorHistory.length - p2W;
+
+                    let p1Streak = p1.colorHistory.slice(-2).join('');
+                    let p2Streak = p2.colorHistory.slice(-2).join('');
+
+                    let p1MustBlack = (p1Streak === 'WW') || ((p1W - p1B) >= 2);
+                    let p1MustWhite = (p1Streak === 'BB') || ((p1B - p1W) >= 2);
+                    let p2MustBlack = (p2Streak === 'WW') || ((p2W - p2B) >= 2);
+                    let p2MustWhite = (p2Streak === 'BB') || ((p2B - p2W) >= 2);
+
+                    let p1IsWhite = true;
+                    if (p1MustWhite || p2MustBlack) p1IsWhite = true;
+                    else if (p1MustBlack || p2MustWhite) p1IsWhite = false;
+                    else p1IsWhite = p1W <= p2W;
+
+                    pairs.push({ id: generateUUID(), white: p1IsWhite ? p1 : p2, black: p1IsWhite ? p2 : p1, result: null });
+                } else pairs.push({ id: generateUUID(), white: p1, black: null, result: '1-0', isBye: true });
+            }
+            return pairs;
+        };
+
+        const pairRoundRobin = (players, roundIdx, isDouble, colorSeed) => {
+            let n = players.length; let map = [...players].sort((a, b) => b.rating - a.rating);
+            if (n % 2 !== 0) { map.push({ id: 'BYE', name: 'BYE', isGhost: true }); n++; }
+            let effectiveRound = roundIdx % (n - 1); let isSecondLeg = roundIdx >= (n - 1);
+            const pairs = [];
+            let invertLeg = colorSeed === 'black' || (colorSeed === 'random' && Math.random() > 0.5);
+            for (let i = 0; i < n / 2; i++) {
+                let p1Idx = (effectiveRound + i) % (n - 1); let p2Idx = (n - 1 - i + effectiveRound) % (n - 1);
+                if (i === 0) p2Idx = n - 1;
+                let p1White = i === 0 ? (effectiveRound % 2 === 0) : ((effectiveRound % 2 === 0) !== (i % 2 !== 0));
+                if (invertLeg) p1White = !p1White;
+                if (isDouble && isSecondLeg) p1White = !p1White;
+                let p1 = map[p1Idx]; let p2 = map[p2Idx];
+                if (!p1.isGhost && !p2.isGhost) pairs.push({ id: generateUUID(), white: p1White ? p1 : p2, black: p1White ? p2 : p1, result: null });
+                else { let realP = p1.isGhost ? p2 : p1; if (!realP.isGhost) pairs.push({ id: generateUUID(), white: realP, black: null, result: '1-0', isBye: true }); }
+            }
+            return pairs;
+        };
+
+        // --- COMPONENTS ---
+        const Toast = ({ notification, onClose }) => {
+            if (!notification) return null;
+            return (
+                <div className="fixed top-6 right-6 z-[100] animate-slide-in-right">
+                    <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl border ${notification.type === 'error' ? 'bg-monolith-panel border-monolith-danger text-monolith-danger' : 'bg-monolith-panel border-monolith-blue text-monolith-blue'}`}>
+                        {notification.type === 'error' ? <span className="font-bold text-xl">!</span> : I.Check}
+                        <span className="font-bold text-monolith-text">{notification.msg}</span>
+                    </div>
+                </div>
+            )
+        }
+
+        const CustomDropdown = ({ value, onChange, options }) => {
+            const [open, setOpen] = useState(false);
+            const ref = useRef(null);
+            useEffect(() => {
+                const handleClickOutside = (event) => { if (ref.current && !ref.current.contains(event.target)) setOpen(false); };
+                document.addEventListener("mousedown", handleClickOutside);
+                return () => document.removeEventListener("mousedown", handleClickOutside);
+            }, []);
+            const selected = options.find(o => o.val === value) || options[0];
+            return (
+                <div className={`m-dropdown ${open ? 'open' : ''}`} ref={ref}>
+                    <div className="m-dropdown-head" onClick={() => setOpen(!open)}>
+                        <span>{selected.lbl}</span>
+                        <div className="text-monolith-sub">{I.Chevron}</div>
+                    </div>
+                    <div className="m-dropdown-body">
+                        {options.map(o => (
+                            <div key={o.val} className={`m-dropdown-item ${o.val === value ? 'selected' : ''}`}
+                                onClick={() => { onChange({ target: { value: o.val } }); setOpen(false); }}>
+                                {o.lbl}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const EditPlayerModal = ({ player, onClose, onSave, t }) => {
+            const [data, setData] = useState({ ...player });
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                    <div className="w-[400px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
+                            <h2 className="text-xl font-bold text-monolith-text">{t('edit_player')}</h2>
+                            <button onClick={onClose} className="text-monolith-sub hover:text-monolith-text">{I.X}</button>
+                        </div>
+                        <div className="space-y-4">
+                            <div><label className="text-xs text-monolith-sub block mb-1">{t('pl_name')}</label><input className="m-input" value={data.name} onChange={e => setData({ ...data, name: e.target.value })} /></div>
+                            <div>
+                                <label className="text-xs text-monolith-sub block mb-1">{t('title')}</label>
+                                <CustomDropdown value={data.title} onChange={e => setData({ ...data, title: e.target.value })} options={[{ val: '', lbl: 'None' }, { val: 'GM', lbl: 'GM' }, { val: 'WGM', lbl: 'WGM' }, { val: 'IM', lbl: 'IM' }, { val: 'WIM', lbl: 'WIM' }, { val: 'FM', lbl: 'FM' }, { val: 'WFM', lbl: 'WFM' }, { val: 'CM', lbl: 'CM' }, { val: 'WCM', lbl: 'WCM' }]} />
+                            </div>
+                            <div><label className="text-xs text-monolith-sub block mb-1">{t('country')}</label><input className="m-input" value={data.country} onChange={e => setData({ ...data, country: e.target.value })} /></div>
+                            <div><label className="text-xs text-monolith-sub block mb-1">{t('rating')}</label><input type="number" className="m-input" value={data.rating} onChange={e => setData({ ...data, rating: parseInt(e.target.value) })} /></div>
+                            <div className="flex gap-2 pt-4">
+                                <button onClick={() => onSave(data)} className="btn-primary flex-1">{t('update')}</button>
+                                <button onClick={onClose} className="btn-secondary flex-1">{t('cancel')}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ExcludeModal = ({ player, onClose, onConfirm, t }) => {
+            const [isCheating, setIsCheating] = useState(false);
+            const [reason, setReason] = useState("");
+            const [report, setReport] = useState(null);
+            const handleFile = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (x) => setReport(x.target.result); reader.readAsDataURL(file); } };
+            const handleSubmit = () => onConfirm(player.id, isCheating, isCheating ? report : reason);
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                    <div className="w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
+                            <h2 className="text-xl font-bold text-monolith-danger flex items-center gap-2">{I.Skull} {t('exclude_title')}</h2>
+                            <button onClick={onClose} className="text-monolith-sub hover:text-white">{I.X}</button>
+                        </div>
+                        <div className="mb-6 bg-monolith-bg p-4 rounded border border-monolith-border"><span className="text-monolith-text font-bold text-lg">{player.name}</span></div>
+                        <div className="space-y-6">
+                            <div><label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-5 h-5 accent-monolith-danger" checked={isCheating} onChange={e => setIsCheating(e.target.checked)} /><span className="text-monolith-text font-bold">{t('is_cheating')}</span></label></div>
+                            {isCheating ? (
+                                <div><label className="block text-sm text-monolith-sub mb-2">{t('upload_report')}</label><input type="file" accept="application/pdf" onChange={handleFile} className="block w-full text-sm text-monolith-sub file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-monolith-blue file:text-white hover:file:bg-blue-600" /></div>
+                            ) : (
+                                <div><label className="block text-sm text-monolith-sub mb-2">{t('reason_label')}</label><input className="m-input" value={reason} onChange={e => setReason(e.target.value)} placeholder="..." /></div>
+                            )}
+                            <button onClick={handleSubmit} className={`w-full py-3 rounded font-bold text-white transition-all ${isCheating ? 'bg-monolith-danger hover:bg-red-600' : 'bg-monolith-orange hover:bg-orange-600'}`}>{isCheating ? t('confirm_ban') : t('confirm_withdraw')}</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const StartModal = ({ onClose, onConfirm, t }) => (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                <div className="w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                    <div className="mb-6 text-center">
+                        <div className="text-monolith-orange mb-2 flex justify-center">{I.Play}</div>
+                        <h2 className="text-xl font-bold text-monolith-text mb-2">{t('start_prompt')}</h2>
+                        <p className="text-sm text-monolith-sub">{t('start_q')}</p>
+                    </div>
+                    <div className="space-y-3">
+                        <button onClick={() => onConfirm('white')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-blue p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-white border border-gray-400 group-hover:bg-monolith-blue group-hover:border-monolith-blue"></div><span className="text-monolith-text font-bold">{t('opt_white')}</span></button>
+                        <button onClick={() => onConfirm('black')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-orange p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-black border border-gray-600 group-hover:bg-monolith-orange group-hover:border-monolith-orange"></div><span className="text-monolith-text font-bold">{t('opt_black')}</span></button>
+                        <button onClick={() => onConfirm('random')} className="w-full bg-monolith-bg border border-monolith-border hover:border-purple-500 p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-gradient-to-br from-white to-black group-hover:from-purple-400 group-hover:to-purple-600"></div><span className="text-monolith-text font-bold">{t('opt_rand')}</span></button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const MatchCard = ({ match, onResult, t }) => {
+            const isLocked = !match.black || match.white.status !== 'active' || (match.black && match.black.status !== 'active');
+
+            return (
+                <div className={`match-card ${match.result ? 'finished' : ''} ${isLocked ? 'opacity-80' : ''}`}>
+                    <div className="flex-1 flex flex-col items-start">
+                        <div className="flex items-center gap-2">
+                            <span className={`text-lg font-bold ${match.result === '1-0' ? 'text-monolith-blue' : 'text-monolith-text'}`}>
+                                {match.white.title && <span className="text-xs text-monolith-blue mr-1">{match.white.title}</span>}{match.white.name}
+                            </span>
+                            {match.white.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.white.country}</span>}
+                            {match.white.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.white.status}</span>}
+                        </div>
+                        <span className="text-xs text-monolith-sub font-mono">{match.white.rating}</span>
+                    </div>
+                    <div className="flex items-center gap-4 mx-4">
+                        {match.result ? (
+                            <div className={`flex flex-col items-center gap-1 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isLocked && onResult(null)} title={isLocked ? "Match Locked" : "Click to Edit"}>
+                                <div className="text-2xl font-bold tracking-widest font-mono">
+                                    <span className={match.result === '1-0' ? 'text-monolith-blue' : ''}>{match.result.split('-')[0]}</span>
+                                    <span className="text-monolith-sub mx-1">-</span>
+                                    <span className={match.result === '0-1' ? 'text-monolith-orange' : ''}>{match.result.split('-')[1]}</span>
+                                </div>
+                                {!isLocked && <span className="text-[10px] text-monolith-sub opacity-50">EDIT</span>}
+                                {isLocked && <span className="text-[10px] text-monolith-danger opacity-80">{!match.black ? 'BYE' : 'LOCKED'}</span>}
+                            </div>
+                        ) : (
+                            <div className="flex rounded overflow-hidden">
+                                <button onClick={() => onResult('1-0')} className="score-btn win-white" title="White Win">1-0</button>
+                                <button onClick={() => onResult('0.5-0.5')} className="score-btn draw" title="Draw">½</button>
+                                <button onClick={() => onResult('0-1')} className="score-btn win-black" title="Black Win">0-1</button>
+                            </div>
+                        )}
+                    </div>
+                    <div className="flex-1 flex flex-col items-end">
+                        <div className="flex items-center gap-2">
+                            {match.black && match.black.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.black.status}</span>}
+                            {match.black?.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.black.country}</span>}
+                            <span className={`text-lg font-bold ${match.result === '0-1' ? 'text-monolith-orange' : 'text-monolith-text'}`}>
+                                {match.black?.title && <span className="text-xs text-monolith-orange mr-1">{match.black.title}</span>}{match.black?.name || 'BYE'}
+                            </span>
+                        </div>
+                        <span className="text-xs text-monolith-sub font-mono">{match.black?.rating}</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [view, setView] = useState('settings');
+            const [lang, setLang] = useState('en');
+            const [theme, setTheme] = useState('dark');
+            const [settings, setSettings] = useState({ name: '', type: 'swiss', tieBreak: 'bh', roundsCount: 5 });
+            const [players, setPlayers] = useState([]);
+            const [rounds, setRounds] = useState([]);
+            const [selectedRound, setSelectedRound] = useState(0);
+            const [selectedPlayer, setSelectedPlayer] = useState(null);
+            const [editingPlayer, setEditingPlayer] = useState(null);
+            const [excludingPlayer, setExcludingPlayer] = useState(null);
+            const [startModalOpen, setStartModalOpen] = useState(false);
+            const [pInput, setPInput] = useState({ name: '', rating: 1200, country: '', title: '' });
+            const [notif, setNotif] = useState(null);
+
+            const t = (key) => DICT[lang][key] || key;
+            useEffect(() => { document.documentElement.lang = lang; document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr'; }, [lang]);
+            useEffect(() => { document.body.classList.toggle('light-mode', theme === 'light'); }, [theme]);
+
+            const notify = (msg, type = 'success') => {
+                setNotif({ msg, type, id: Date.now() });
+                setTimeout(() => setNotif(null), 3000);
+            };
+
+            const stats = useMemo(() => {
+                let s = players.map(p => ({ ...p, score: 0, games: 0, wins: 0, draws: 0, loss: 0, bh: 0, bhCut1: 0, sb: 0, deScore: 0, history: [], colorHistory: [], oppScores: [], floatHistory: [], unplayedGames: 0 }));
+                rounds.forEach(r => {
+                    // Evaluate float directions *before* score is mutated for this round
+                    r.pairings.forEach(m => {
+                        let w = s.find(p => p.id === m.white.id); let b = m.black ? s.find(p => p.id === m.black.id) : null;
+                        if (w && b) {
+                            if (w.score > b.score) { w.floatHistory.push('D'); b.floatHistory.push('U'); }
+                            else if (b.score > w.score) { b.floatHistory.push('D'); w.floatHistory.push('U'); }
+                            else { w.floatHistory.push(null); b.floatHistory.push(null); }
+                        } else if (w) {
+                            w.floatHistory.push(null);
+                        }
+                    });
+
+                    r.pairings.forEach(m => {
+                        let w = s.find(p => p.id === m.white.id); let b = m.black ? s.find(p => p.id === m.black.id) : null;
+
+                        if (w && !m.isBye) w.colorHistory.push('W');
+                        if (b) b.colorHistory.push('B');
+
+                        if (!m.result) return;
+
+                        const rec = (pl, opp, res) => pl && pl.history.push({ round: r.number, oppId: opp?.id || 'BYE', oppName: opp?.name || 'BYE', result: res });
+
+                        if (!b && w) { w.score++; w.wins++; w.games++; w.unplayedGames++; rec(w, null, 'Win'); return; }
+                        if (m.result === '1-0') { if (w) { w.score++; w.wins++; w.games++; rec(w, b, 'Win') } if (b) { b.loss++; b.games++; rec(b, w, 'Loss') } }
+                        else if (m.result === '0-1') { if (b) { b.score++; b.wins++; b.games++; rec(b, w, 'Win') } if (w) { w.loss++; w.games++; rec(w, b, 'Loss') } }
+                        else if (m.result === '0.5-0.5') { if (w) { w.score += 0.5; w.draws++; w.games++; rec(w, b, 'Draw') } if (b) { b.score += 0.5; b.draws++; b.games++; rec(b, w, 'Draw') } }
+                    });
+                });
+
+                // Calculate Tie-Break virtual scores for Buchholz before applying to oppScores
+                s.forEach(p => {
+                    p.tieBreakScore = p.score;
+                    if (p.unplayedGames > 0 && settings.tieBreak !== 'direct') {
+                        // FIDE: remove the won point from unplayed/BYE and add 0.5 instead for opponent evaluation
+                        p.tieBreakScore -= (p.unplayedGames * 0.5);
+                    }
+                });
+
+                s.forEach(p => {
+                    rounds.forEach(r => {
+                        const m = r.pairings.find(x => x.white?.id === p.id || x.black?.id === p.id);
+                        if (m) {
+                            if (!m.black || m.isBye) {
+                                let totalRounds = settings.type === 'swiss' ? settings.roundsCount : (settings.type === 'rr' ? players.length - (players.length % 2 !== 0 ? 0 : 1) : rounds.length);
+                                let scoreBeforeBye = 0;
+                                rounds.filter(prevR => prevR.number < r.number).forEach(prevR => {
+                                    let prevM = prevR.pairings.find(x => x.white?.id === p.id || x.black?.id === p.id);
+                                    if (prevM && prevM.result) {
+                                        if (!prevM.black || prevM.isBye) scoreBeforeBye += 1;
+                                        else if (prevM.white.id === p.id && prevM.result === '1-0') scoreBeforeBye += 1;
+                                        else if (prevM.black?.id === p.id && prevM.result === '0-1') scoreBeforeBye += 1;
+                                        else if (prevM.result === '0.5-0.5') scoreBeforeBye += 0.5;
+                                    }
+                                });
+                                let unplayedRoundCount = Math.max(0, totalRounds - r.number);
+                                let virtualScore = scoreBeforeBye + 0.5 + (0.5 * unplayedRoundCount);
+                                p.oppScores.push(virtualScore);
+                                p.sb += 0.5 * virtualScore; // FIDE C.04.5: Unplayed games are treated as a Draw against the Virtual Opponent
+                            } else if (m.result) {
+                                let opp = s.find(x => x.id === (m.white.id === p.id ? m.black.id : m.white.id));
+                                if (opp) {
+                                    p.oppScores.push(opp.tieBreakScore); // FIDE Virtual opponent score
+                                    if ((m.white.id === p.id && m.result === '1-0') || (m.black.id === p.id && m.result === '0-1')) p.sb += opp.tieBreakScore;
+                                    else if (m.result === '0.5-0.5') p.sb += 0.5 * opp.tieBreakScore;
+                                }
+                            }
+                        }
+                    });
+                });
+
+                // FIX: FIDE Multi-way Direct Encounter Calculator
+                s.forEach(p => {
+                    p.deScore = 0;
+                    let tiedOpps = s.filter(x => x.score === p.score && x.id !== p.id);
+                    tiedOpps.forEach(opp => {
+                        const match = rounds.flatMap(r => r.pairings).find(m =>
+                            (m.white.id === p.id && m.black?.id === opp.id) ||
+                            (m.white.id === opp.id && m.black?.id === p.id)
+                        );
+                        if (match && match.result && tiedOpps.every(o => rounds.flatMap(r => r.pairings).some(m => (m.white.id === p.id && m.black?.id === o.id) || (m.white.id === o.id && m.black?.id === p.id)))) {
+                            if (match.white.id === p.id && match.result === '1-0') p.deScore += 1;
+                            else if (match.black?.id === p.id && match.result === '0-1') p.deScore += 1;
+                            else if (match.result === '0.5-0.5') p.deScore += 0.5;
+                        }
+                    });
+                });
+
+                s.forEach(p => {
+                    p.bh = p.oppScores.reduce((acc, val) => acc + val, 0);
+                    let sortedOpps = [...p.oppScores].sort((a, b) => a - b);
+                    p.bhCut1 = sortedOpps.length > 0 ? p.bh - sortedOpps[0] : p.bh;
+                });
+
+                return s.sort((a, b) => {
+                    if (a.status === 'banned' && b.status !== 'banned') return 1;
+                    if (b.status === 'banned' && a.status !== 'banned') return -1;
+                    if (b.score !== a.score) return b.score - a.score;
+                    if (settings.tieBreak === 'bh') return b.bh - a.bh;
+                    if (settings.tieBreak === 'bh_cut1') return b.bhCut1 - a.bhCut1;
+                    if (settings.tieBreak === 'sb') return b.sb - a.sb;
+                    if (settings.tieBreak === 'direct') return b.deScore - a.deScore;
+                    return b.wins - a.wins;
+                });
+            }, [players, rounds, settings.tieBreak]);
+
+            const nextRound = (colorSeed = null) => {
+                if (rounds.length > 0 && rounds[rounds.length - 1].pairings.some(m => !m.result)) { notify(t('finish_alert'), 'error'); return; }
+                if (settings.type === 'swiss' && rounds.length >= settings.roundsCount) { notify(t('round_limit'), 'error'); return; }
+
+                if (settings.type === 'ko' && rounds.length > 0) {
+                    const hasDraws = rounds[rounds.length - 1].pairings.some(m => m.result === '0.5-0.5');
+                    if (hasDraws) { notify(t('ko_draw_error'), 'error'); return; }
+                }
+
+                const logicP = players
+                    .filter(p => p.status !== 'banned' && p.status !== 'withdrawn')
+                    .map(p => {
+                        const s = stats.find(x => x.id === p.id);
+                        let lastFloat = s.floatHistory.length > 0 ? s.floatHistory[s.floatHistory.length - 1] : null;
+                        return { ...p, score: s.score, history: s.history, colorHistory: s.colorHistory, floatHistory: lastFloat, hasBye: s.history.some(h => h.oppId === 'BYE') };
+                    });
+
+                // Extra layer of initial sorting inside ranking pool includes title priority.
+                logicP.sort((a, b) => b.score - a.score || b.rating - a.rating || TITLE_RANKS[b.title || ''] - TITLE_RANKS[a.title || ''] || (a.name || '').localeCompare(b.name || ''));
+
+                let n = logicP.length;
+                if (n % 2 !== 0) n++;
+                const maxRRRounds = settings.type === 'rr' ? n - 1 : (n - 1) * 2;
+                if ((settings.type === 'rr' || settings.type === 'drr') && rounds.length >= maxRRRounds) {
+                    notify(t('over_alert'), 'error'); return;
+                }
+
+                let newPairs = [];
+                if (settings.type === 'swiss') newPairs = pairSwiss(logicP, rounds, colorSeed);
+                else if (settings.type === 'ko') newPairs = pairKnockout(logicP, rounds, colorSeed);
+                else if (settings.type === 'rr' || settings.type === 'drr') newPairs = pairRoundRobin(logicP, rounds.length, settings.type === 'drr', colorSeed);
+
+                if (!newPairs || newPairs.length === 0) { notify(t('over_alert'), 'error'); return; }
+
+                const updatedPlayers = [...players];
+                logicP.forEach(lp => {
+                    const pIdx = updatedPlayers.findIndex(x => x.id === lp.id);
+                    if (pIdx > -1) updatedPlayers[pIdx].floatHistory = lp.floatHistory;
+                });
+                setPlayers(updatedPlayers);
+
+                setRounds([...rounds, { number: rounds.length + 1, pairings: newPairs }]); setSelectedRound(rounds.length);
+            };
+
+            const initiateStart = () => {
+                if (players.length < 2) return;
+                if (rounds.length === 0 && (settings.type === 'swiss' || settings.type === 'rr' || settings.type === 'drr' || settings.type === 'ko')) setStartModalOpen(true);
+                else nextRound();
+            };
+
+            const confirmStart = (pref) => { setStartModalOpen(false); setView('pairings'); nextRound(pref); };
+
+            const setRes = (rIdx, mId, res) => {
+                setRounds(prev => prev.map((r, i) => {
+                    if (i !== rIdx) return r;
+                    return { ...r, pairings: r.pairings.map(m => m.id === mId ? { ...m, result: res } : m) };
+                }));
+            };
+
+            const addPlayer = () => { if (pInput.name) { setPlayers([...players, { id: generateUUID(), name: pInput.name, rating: pInput.rating, country: pInput.country, title: pInput.title, status: 'active', floatHistory: 0 }]); setPInput({ ...pInput, name: '' }); } };
+            const handleUpdatePlayer = (updated) => { setPlayers(players.map(p => p.id === updated.id ? updated : p)); setEditingPlayer(null); };
+            const handleDelete = (id) => { setPlayers(players.filter(p => p.id !== id)); };
+
+            const handleDisqualify = (id, isCheating, payload) => {
+                const newStatus = isCheating ? 'banned' : 'withdrawn';
+                const newPlayers = players.map(p => p.id === id ? { ...p, status: newStatus, banData: payload } : p);
+
+                const newRounds = rounds.map(r => ({
+                    ...r, pairings: r.pairings.map(m => {
+                        let updatedWhite = m.white.id === id ? { ...m.white, status: newStatus } : m.white;
+                        let updatedBlack = m.black?.id === id ? { ...m.black, status: newStatus } : m.black;
+                        let newRes = m.result;
+
+                        if (isCheating) {
+                            if (m.white.id === id) newRes = '0-1';
+                            if (m.black?.id === id) newRes = '1-0';
+                        }
+                        return { ...m, white: updatedWhite, black: updatedBlack, result: newRes };
+                    })
+                }));
+
+                setPlayers(newPlayers); setRounds(newRounds); setExcludingPlayer(null);
+                notify(isCheating ? "Player Banned & Scores Adjusted" : "Player Withdrawn", "error");
+            };
+
+            const exportToJson = () => {
+                try {
+                    const dataObj = { settings, players, rounds };
+                    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dataObj));
+                    const dlNode = document.createElement('a');
+                    dlNode.setAttribute("href", dataStr);
+                    dlNode.setAttribute("download", `Monolith_Chess_${settings.name || 'Backup'}.json`);
+                    document.body.appendChild(dlNode);
+                    dlNode.click();
+                    dlNode.remove();
+                    notify("Backup Downloaded Successfully");
+                } catch (e) { notify("Export Failed", "error"); }
+            };
+
+            const loadFromJson = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try {
+                        const d = JSON.parse(ev.target.result);
+                        if (d.settings) setSettings(d.settings);
+                        if (d.players) setPlayers(d.players);
+                        if (d.rounds) { setRounds(d.rounds); setSelectedRound(d.rounds.length > 0 ? d.rounds.length - 1 : 0); }
+                        setView('pairings');
+                        notify("Backup Loaded Successfully");
+                    } catch (err) { notify("Invalid JSON File", "error"); }
+                };
+                reader.readAsText(file);
+            };
+
+            const exportRef = useRef();
+            const exportImage = async () => {
+                if (exportRef.current) {
+                    const canvas = await html2canvas(exportRef.current, { backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff', windowWidth: 1200 });
+                    const link = document.createElement('a'); link.download = 'monolith_report.png'; link.href = canvas.toDataURL(); link.click();
+                }
+            };
+
+            const pairRef = useRef();
+            const exportPairings = async () => {
+                if (pairRef.current) {
+                    const container = pairRef.current.closest('.overflow-auto');
+                    if (container) container.classList.replace('overflow-auto', 'overflow-visible');
+                    const canvas = await html2canvas(pairRef.current, { backgroundColor: theme === 'dark' ? '#09090b' : '#ffffff' });
+                    if (container) container.classList.replace('overflow-visible', 'overflow-auto');
+                    const link = document.createElement('a'); link.download = `round_${selectedRound + 1}_pairings.png`; link.href = canvas.toDataURL(); link.click();
+                }
+            };
+
+            return (
+                <div className="flex h-screen bg-monolith-bg text-monolith-text transition-colors duration-300">
+                    <Toast notification={notif} onClose={() => setNotif(null)} />
+
+                    <aside className="w-64 bg-monolith-panel border-e border-monolith-border flex flex-col shadow-lg z-20">
+                        <div className="p-6 border-b border-monolith-border">
+                            <h1 className="text-xl font-bold tracking-wider animate-fade-in">CHESS <span className="text-monolith-blue">DIRECTOR</span></h1>
+                            <div className="flex items-center gap-2 mt-2">
+                                <span className="text-xs text-monolith-text font-mono">V1.0</span>
+                                <span className="text-[10px] bg-monolith-orange text-white px-1.5 py-0.5 rounded font-bold tracking-wider">BETA</span>
+                            </div>
+                        </div>
+                        <nav className="flex-1 p-4 overflow-y-auto">
+                            {['settings', 'pairings', 'standings'].map((v, i) => (
+                                <div key={v} onClick={() => setView(v)} className={`nav-item ${view === v ? 'active' : ''}`} style={{ animationDelay: `${i * 100}ms` }}>
+                                    {v === 'settings' ? I.Users : v === 'pairings' ? I.List : I.Trophy} {t(v)}
+                                </div>
+                            ))}
+                        </nav>
+                        <div className="p-4 border-t border-monolith-border space-y-2">
+                            <div className="flex gap-2 mb-2">
+                                <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="btn-icon flex-1">{theme === 'dark' ? I.Sun : I.Moon}</button>
+                                <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="btn-icon flex-1 font-bold font-mono">{lang === 'en' ? 'AR' : 'EN'}</button>
+                            </div>
+                            <button onClick={exportToJson} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-blue hover:text-monolith-blue">{I.Save} {t('save')}</button>
+                            <input type="file" accept=".json" onChange={loadFromJson} className="hidden" id="imp" />
+                            <button onClick={() => document.getElementById('imp').click()} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-orange hover:text-monolith-orange">{I.Upload} {t('load')}</button>
+                            <div className="text-[10px] text-monolith-sub text-center pt-4 opacity-50 font-mono">
+                                © 2026 Developed by Adham Mohamed
+                            </div>
+                        </div>
+                    </aside>
+
+                    <main className="flex-1 flex flex-col overflow-hidden relative">
+                        <div className="fixed top-0 left-[-9999px] w-[1200px]" ref={exportRef}>
+                            <div className="bg-[#09090b] p-10 text-white min-h-screen">
+                                <h1 className="text-4xl font-bold mb-4">OFFICIAL TOURNAMENT REPORT</h1>
+                                <table className="w-full text-left border border-gray-700">
+                                    <thead className="bg-gray-800 text-[#00A9FF]"><tr><th className="p-2">Rank</th><th className="p-2">Name</th><th className="p-2">Points</th><th className="p-2">TB</th></tr></thead>
+                                    <tbody>{stats.map((p, i) => <tr key={p.id} className="border-b border-gray-700"><td className="p-2">{i + 1}</td><td className="p-2">{p.name}</td><td className="p-2 text-[#FF6F00] font-bold">{p.score}</td><td className="p-2 font-mono">{settings.tieBreak === 'direct' ? p.deScore : (settings.tieBreak === 'bh' ? p.bh : (settings.tieBreak === 'bh_cut1' ? p.bhCut1 : p.sb)).toFixed(1)}</td></tr>)}</tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <header className="h-16 bg-monolith-panel border-b border-monolith-border flex items-center justify-between px-8 shadow-sm animate-slide-up">
+                            <div className="font-bold text-lg">{settings.name || "Untitled Tournament"}</div>
+                            <div className="flex gap-2 text-xs font-mono"><span className="px-2 py-1 bg-monolith-bg rounded text-monolith-blue border border-monolith-border uppercase">{settings.type}</span></div>
+                        </header>
+
+                        <div className="flex-1 overflow-auto p-8 custom-scrollbar">
+                            {view === 'settings' && (
+                                <div key="settings" className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                                    <div className={`grid grid-cols-1 ${settings.type === 'swiss' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
+                                        <div className="md:col-span-1">
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('tour_name')}</label>
+                                            <input className="m-input" maxLength={49} value={settings.name} onChange={e => setSettings({ ...settings, name: e.target.value })} placeholder="..." />
+                                        </div>
+                                        <div>
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('sys_type')}</label>
+                                            <CustomDropdown value={settings.type} onChange={e => setSettings({ ...settings, type: e.target.value })} options={[{ val: 'swiss', lbl: t('swiss') }, { val: 'ko', lbl: t('knockout') }, { val: 'rr', lbl: t('rr') }, { val: 'drr', lbl: t('drr') }]} />
+                                        </div>
+                                        {settings.type === 'swiss' && (
+                                            <div>
+                                                <label className="block text-sm text-monolith-sub mb-2">{t('rounds_count')}</label>
+                                                <input type="number" className="m-input" value={settings.roundsCount} onChange={e => setSettings({ ...settings, roundsCount: parseInt(e.target.value) })} />
+                                            </div>
+                                        )}
+                                        <div>
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('tie_break')}</label>
+                                            <CustomDropdown value={settings.tieBreak} onChange={e => setSettings({ ...settings, tieBreak: e.target.value })} options={[{ val: 'bh_cut1', lbl: t('bh_cut1') }, { val: 'bh', lbl: t('buchholz') }, { val: 'sb', lbl: t('sonneborn') }, { val: 'direct', lbl: t('direct') }]} />
+                                            <p className="text-[11px] text-monolith-sub mt-2 opacity-80">{t(`desc_${settings.tieBreak === 'direct' ? 'de' : settings.tieBreak}`)}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-monolith-panel rounded border border-monolith-border overflow-hidden shadow-sm animate-slide-up">
+                                        <div className="p-4 bg-monolith-bg border-b border-monolith-border flex gap-3 flex-wrap md:flex-nowrap">
+                                            <input className="m-input md:flex-1 w-full" placeholder={t('pl_name')} value={pInput.name} onChange={e => setPInput({ ...pInput, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
+                                            <select className="m-input md:w-28 w-1/3" value={pInput.title} onChange={e => setPInput({ ...pInput, title: e.target.value })}>
+                                                <option value="">{t('title')}</option>
+                                                <option value="GM">GM</option><option value="WGM">WGM</option>
+                                                <option value="IM">IM</option><option value="WIM">WIM</option>
+                                                <option value="FM">FM</option><option value="WFM">WFM</option>
+                                                <option value="CM">CM</option><option value="WCM">WCM</option>
+                                            </select>
+                                            <input className="m-input md:w-24 w-1/3" placeholder={t('country')} value={pInput.country} onChange={e => setPInput({ ...pInput, country: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
+                                            <input className="m-input md:w-24 w-1/4" type="number" placeholder={t('rating')} value={pInput.rating} onChange={e => setPInput({ ...pInput, rating: parseInt(e.target.value) || 0 })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
+                                            <button className="btn-primary w-full md:w-auto" onClick={addPlayer}>{t('add')}</button>
+                                        </div>
+                                        <table className="data-grid">
+                                            <thead><tr><th className="w-12 text-center">#</th><th>{t('name')}</th><th className="w-24">{t('rating')}</th><th className="w-24 text-center">{t('title')}</th><th className="w-24">{t('country')}</th><th className="w-24 text-center">{t('actions')}</th></tr></thead>
+                                            <tbody>
+                                                {players.map((p, i) => <tr key={p.id} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}><td className="text-center text-monolith-sub font-mono">{i + 1}</td><td className="font-bold flex items-center gap-2 mt-2">{p.name} {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">BAN</span>} {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-200 px-1 rounded">WD</span>}</td><td className="font-mono text-monolith-sub">{p.rating}</td><td className="text-monolith-blue text-center text-xs font-bold">{p.title}</td><td>{p.country}</td><td className="text-center flex justify-center gap-2">
+
+                                                    {p.status === 'banned' && p.banData && (
+                                                        <a href={p.banData} download={`Report_${p.name}.pdf`} className="btn-action hover:text-red-500" title="Download Report">{I.File}</a>
+                                                    )}
+
+                                                    <button onClick={() => setEditingPlayer(p)} className="btn-action">{I.Edit}</button>
+
+                                                    {rounds.length === 0 ? (
+                                                        <button onClick={() => handleDelete(p.id)} className="btn-action danger" title="Delete Forever">{I.Trash}</button>
+                                                    ) : (
+                                                        <button onClick={() => setExcludingPlayer(p)} className="btn-action danger" title="Disqualify/Ban">{I.X}</button>
+                                                    )}
+
+                                                </td></tr>)}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <button onClick={initiateStart} className="w-full py-4 bg-monolith-orange text-white font-bold text-lg rounded shadow-lg hover:brightness-110 transition-all active:scale-95">{rounds.length > 0 ? t('next') : t('start')}</button>
+                                </div>
+                            )}
+
+                            {view === 'pairings' && (
+                                <div key="pairings" className="max-w-6xl mx-auto space-y-6 animate-fade-in">
+                                    <div className="flex justify-between items-center">
+                                        <div className="flex gap-2 overflow-x-auto">
+                                            {rounds.map((r, i) => (
+                                                <button key={`rnd-${i}`} onClick={() => setSelectedRound(i)}
+                                                    className={`px-4 py-2 rounded text-sm font-bold border transition-all ${selectedRound === i ? 'bg-monolith-blue text-white border-monolith-blue shadow-[0_0_10px_rgba(0,169,255,0.3)]' : 'bg-transparent text-monolith-sub border-monolith-border hover:border-gray-500'}`}>
+                                                    {t('round')} {r.number}
+                                                </button>
+                                            ))}
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button onClick={exportPairings} className="btn-secondary flex items-center gap-2 text-sm">{I.Image} {t('export_pair')}</button>
+                                            <button onClick={() => initiateStart()} className="btn-primary flex items-center gap-2">{I.Play} {t('next')}</button>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4" ref={pairRef}>
+                                        <div className="text-center font-bold text-xl mb-4 bg-monolith-panel p-2 rounded border border-monolith-border">ROUND {selectedRound + 1} PAIRINGS</div>
+                                        {rounds[selectedRound]?.pairings.map((m, i) => (
+                                            <div key={m.id} className="animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
+                                                <MatchCard match={m} t={t} onResult={(res) => setRes(selectedRound, m.id, res)} />
+                                            </div>
+                                        ))}
+                                        {rounds.length === 0 && <div className="text-center text-monolith-sub py-10 animate-pulse">No matches yet. Start the tournament!</div>}
+                                    </div>
+                                </div>
+                            )}
+
+                            {view === 'standings' && (
+                                <div key="standings" className="max-w-5xl mx-auto space-y-4 animate-fade-in">
+                                    <div className="flex justify-end"><button onClick={exportImage} className="btn-secondary flex items-center gap-2">{I.Image} {t('export_btn')}</button></div>
+                                    <div className="bg-monolith-panel rounded border border-monolith-border p-6 shadow-xl relative overflow-hidden">
+                                        <div className="flex justify-between items-end mb-6 border-b border-monolith-border pb-4">
+                                            <div><h1 className="text-3xl font-bold tracking-tight">TOURNAMENT <span className="text-monolith-blue">STANDINGS</span></h1><p className="text-monolith-orange text-sm uppercase">{settings.name}</p></div>
+                                            <div className="text-right text-xs text-monolith-sub font-mono">TB: {settings.tieBreak.toUpperCase()}</div>
+                                        </div>
+                                        <table className="data-grid">
+                                            <thead><tr><th className="w-16 text-center">{t('rank')}</th><th>{t('name')}</th><th className="text-center">{t('games')}</th><th className="text-center">{t('pts')}</th><th className="text-center">TB</th></tr></thead>
+                                            <tbody>
+                                                {stats.map((p, i) => (<tr key={p.id} onClick={() => setSelectedPlayer(p)} className="animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
+                                                    <td className="text-center font-bold text-monolith-blue">{i + 1}</td>
+                                                    <td>
+                                                        <div className="font-bold flex items-center gap-2">
+                                                            {p.title && <span className="text-xs text-monolith-blue border-b border-monolith-blue pb-[1px]">{p.title}</span>}
+                                                            <span>{p.country}</span>{p.name}
+                                                            {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">{t('status_banned')}</span>}
+                                                            {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-300 px-1 rounded">{t('status_withdrawn')}</span>}
+                                                        </div>
+                                                        <div className="text-xs text-monolith-sub">{p.rating}</div>
+                                                    </td>
+                                                    <td className="text-center text-monolith-sub">{p.games}</td>
+                                                    <td className="text-center font-bold text-xl text-monolith-orange">{p.score}</td>
+                                                    <td className="text-center font-mono text-monolith-sub">{settings.tieBreak === 'direct' ? p.deScore : (settings.tieBreak === 'bh' ? p.bh : (settings.tieBreak === 'bh_cut1' ? p.bhCut1 : p.sb)).toFixed(1)}</td>
+                                                </tr>))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </main>
+
+                    {/* Modals */}
+                    {startModalOpen && <StartModal onClose={() => setStartModalOpen(false)} onConfirm={confirmStart} t={t} />}
+                    {editingPlayer && <EditPlayerModal player={editingPlayer} onClose={() => setEditingPlayer(null)} onSave={handleUpdatePlayer} t={t} />}
+                    {excludingPlayer && <ExcludeModal player={excludingPlayer} onClose={() => setExcludingPlayer(null)} onConfirm={handleDisqualify} t={t} />}
+
+                    {selectedPlayer && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedPlayer(null)}>
+                        <div className="w-[500px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                            <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
+                                <div><h2 className="text-2xl font-bold text-monolith-text flex gap-2"><span>{selectedPlayer.country}</span>{selectedPlayer.name}</h2><p className="text-monolith-blue font-mono">{selectedPlayer.rating} ELO</p></div>
+                                <div className="flex gap-2">
+                                    {selectedPlayer.status === 'banned' && selectedPlayer.banData && (<a href={selectedPlayer.banData} download="Report.pdf" className="flex items-center gap-1 text-xs bg-monolith-danger text-white px-2 py-1 rounded hover:opacity-80" onClick={e => e.stopPropagation()}>{I.File} Report</a>)}
+                                    <button onClick={() => setSelectedPlayer(null)} className="text-monolith-sub hover:text-monolith-text">{I.X}</button>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 mb-6">{['win', 'draw', 'loss'].map((k, i) => <div key={k} className="bg-monolith-bg border border-monolith-border rounded p-3 text-center"><div className="text-xs text-monolith-sub">{t(k)}</div><div className={`font-bold text-xl ${i === 0 ? 'text-green-500' : i === 1 ? 'text-monolith-sub' : 'text-red-500'}`}>{i === 0 ? selectedPlayer.wins : i === 1 ? selectedPlayer.draws : selectedPlayer.loss}</div></div>)}</div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto">{selectedPlayer.history?.map((h, i) => <div key={`hist-${i}`} className="flex justify-between bg-monolith-bg p-2 rounded text-sm border border-monolith-border"><span className="text-monolith-sub">{t('round')} {h.round}: {h.oppName}</span><span className="font-bold">{h.result}</span></div>)}</div>
+                        </div>
+                    </div>}
+                </div>
+            );
+        };
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
