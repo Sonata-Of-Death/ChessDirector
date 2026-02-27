@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Monolith Chess Director | V1.0 BETA</title>
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -12,9 +12,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
-    <link
-        href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
 
     <script>
@@ -40,9 +38,9 @@
                         mono: ['JetBrains Mono', 'monospace']
                     },
                     animation: {
-                        'fade-in': 'fadeIn 0.4s ease-out',
-                        'slide-up': 'slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1)',
-                        'scale-in': 'scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'fade-in': 'fadeIn 0.3s ease-out',
+                        'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                        'scale-in': 'scaleIn 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                         'slide-in-right': 'slideInRight 0.3s ease-out'
                     }
                 }
@@ -79,6 +77,7 @@
             background-color: var(--m-bg);
             color: var(--m-text);
             height: 100vh;
+            height: 100dvh; /* For accurate mobile sizing */
             overflow: hidden;
             transition: background-color 0.4s ease, color 0.4s ease;
         }
@@ -123,6 +122,7 @@
             cursor: pointer;
         }
 
+        /* Sidebar Nav */
         .nav-item {
             display: flex;
             align-items: center;
@@ -150,6 +150,27 @@
             font-weight: 600;
         }
 
+        /* Mobile Bottom Nav */
+        .mobile-nav-item { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            gap: 4px; 
+            padding: 8px 0; 
+            color: var(--m-text-sub); 
+            transition: all 0.2s; 
+        }
+        .mobile-nav-item.active { 
+            color: #00A9FF; 
+            font-weight: 700; 
+        }
+        .mobile-nav-item.active svg { 
+            stroke: #00A9FF; 
+            transform: scale(1.1); 
+        }
+
         .btn-primary {
             background-color: #00A9FF;
             color: #fff;
@@ -167,7 +188,7 @@
         }
 
         .btn-primary:active {
-            transform: translateY(0);
+            transform: translateY(0) scale(0.96);
         }
 
         .btn-secondary {
@@ -188,7 +209,7 @@
             background-color: var(--m-input-bg);
             border: 1px solid var(--m-border);
             color: var(--m-text);
-            padding: 8px 12px;
+            padding: 10px 12px;
             border-radius: 6px;
             outline: none;
             width: 100%;
@@ -231,7 +252,7 @@
             background-color: var(--m-panel);
             border: 1px solid var(--m-border);
             border-radius: 6px;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             opacity: 0;
             transform: translateY(-10px) scale(0.95);
@@ -246,10 +267,11 @@
         }
 
         .m-dropdown-item {
-            padding: 10px 12px;
+            padding: 12px;
             cursor: pointer;
             color: var(--m-text);
             transition: background 0.1s;
+            border-bottom: 1px solid var(--m-border);
         }
 
         .m-dropdown-item:hover {
@@ -304,8 +326,8 @@
         }
 
         ::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
+            width: 4px;
+            height: 4px;
         }
 
         ::-webkit-scrollbar-track {
@@ -321,14 +343,12 @@
             background: var(--m-text-sub);
         }
 
+        /* Match Cards */
         .match-card {
             background: var(--m-panel);
             border: 1px solid var(--m-border);
             border-radius: 8px;
             padding: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
             overflow: hidden;
@@ -357,9 +377,9 @@
         }
 
         .score-btn {
-            height: 32px;
+            height: 36px;
             padding: 0 16px;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: 700;
             display: flex;
             align-items: center;
@@ -368,6 +388,7 @@
             background: var(--m-bg);
             color: var(--m-text-sub);
             transition: all 0.2s;
+            flex: 1;
         }
 
         .score-btn:first-child {
@@ -383,12 +404,7 @@
             border-inline-start: none;
         }
 
-        .score-btn:hover {
-            background: var(--m-border);
-            color: var(--m-text);
-        }
-
-        .score-btn.win-white:hover,
+        .score-btn.win-white:active,
         .score-btn.active-white {
             background: rgba(0, 169, 255, 0.15);
             color: #00A9FF;
@@ -396,7 +412,7 @@
             z-index: 1;
         }
 
-        .score-btn.win-black:hover,
+        .score-btn.win-black:active,
         .score-btn.active-black {
             background: rgba(255, 111, 0, 0.15);
             color: #FF6F00;
@@ -404,12 +420,21 @@
             z-index: 1;
         }
 
-        .score-btn.draw:hover,
+        .score-btn.draw:active,
         .score-btn.active-draw {
             background: #27272a;
             color: white;
             border-color: #52525b;
             z-index: 1;
+        }
+
+        /* Desktop hover states for buttons */
+        @media (min-width: 768px) {
+            .score-btn { height: 32px; flex: none; }
+            .score-btn:hover { background: var(--m-border); color: var(--m-text); }
+            .score-btn.win-white:hover { background: rgba(0, 169, 255, 0.15); color: #00A9FF; border-color: #00A9FF; z-index: 1; }
+            .score-btn.win-black:hover { background: rgba(255, 111, 0, 0.15); color: #FF6F00; border-color: #FF6F00; z-index: 1; }
+            .score-btn.draw:hover { background: #27272a; color: white; border-color: #52525b; z-index: 1; }
         }
     </style>
 </head>
@@ -423,9 +448,9 @@
         // --- ICONS ---
         const Icon = ({ p, s = 18, c = "currentColor" }) => (<svg xmlns="http://www.w3.org/2000/svg" width={s} height={s} viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">{p}</svg>);
         const I = {
-            Users: <Icon p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></>} />,
-            List: <Icon p={<><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></>} />,
-            Trophy: <Icon p={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M8 22v-4c0-2.5 2.5-4 4-4s4 1.5 4 4v4"></path><path d="M12 2v6"></path></>} />,
+            Users: <Icon p={<><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></>} s={20} />,
+            List: <Icon p={<><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></>} s={20} />,
+            Trophy: <Icon p={<><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M8 22v-4c0-2.5 2.5-4 4-4s4 1.5 4 4v4"></path><path d="M12 2v6"></path></>} s={20} />,
             Play: <Icon p={<polygon points="5 3 19 12 5 21 5 3"></polygon>} />,
             Save: <Icon p={<><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></>} />,
             Upload: <Icon p={<><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></>} />,
@@ -434,8 +459,8 @@
             Sun: <Icon p={<><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></>} />,
             Moon: <Icon p={<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>} />,
             Chevron: <Icon p={<polyline points="6 9 12 15 18 9"></polyline>} />,
-            Edit: <Icon p={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></>} s={14} />,
-            Trash: <Icon p={<><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></>} s={14} />,
+            Edit: <Icon p={<><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></>} s={16} />,
+            Trash: <Icon p={<><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></>} s={16} />,
             Skull: <Icon p={<><path d="M12.8 2.2a6 6 0 0 0-1.6 0"></path><circle cx="12" cy="10" r="1.5"></circle><path d="M22 10c0 5-2.7 7-6 7h-1v4h-6v-4H8c-3.3 0-6-2-6-7a9.2 9.2 0 0 1 1.7-5.4A8 8 0 0 1 12 2a8 8 0 0 1 8.3 2.6A9.2 9.2 0 0 1 22 10Z"></path></>} s={14} />,
             File: <Icon p={<><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></>} s={14} />,
             Check: <Icon p={<polyline points="20 6 9 17 4 12"></polyline>} />
@@ -443,15 +468,15 @@
 
         const DICT = {
             en: {
-                settings: "Settings & Players", pairings: "Rounds & Matches", standings: "Standings",
+                settings: "Players", pairings: "Matches", standings: "Standings",
                 save: "Save (JSON)", load: "Load (JSON)", tour_name: "Tournament Name",
-                sys_type: "System Type", tie_break: "Tie-Break System",
+                sys_type: "System Type", tie_break: "Tie-Break",
                 swiss: "Swiss System", knockout: "Knockout", rr: "Round Robin", drr: "Double Round Robin",
                 buchholz: "Buchholz", bh_cut1: "Buchholz Cut-1", sonneborn: "Sonneborn-Berger", direct: "Direct Encounter",
                 pl_name: "Player Name", country: "Country", rating: "ELO", title: "Title", add: "Add", actions: "Actions",
                 rank: "Rank", name: "Player", games: "G", pts: "Pts",
                 start: "Start Tournament", next: "Generate Next", round: "Round",
-                win: "Win", loss: "Loss", draw: "Draw", export: "Export Report (Image)", export_pair: "Export Pairings",
+                win: "Win", loss: "Loss", draw: "Draw", export: "Export Report", export_pair: "Export Pairings",
                 rounds_count: "Total Rounds",
                 finish_alert: "Finish all matches first!", over_alert: "Tournament Complete!", round_limit: "Max rounds reached!",
                 ko_draw_error: "Knockout draws must be manually resolved (Armageddon) before advancing!",
@@ -462,7 +487,7 @@
                 edit_player: "Edit Player", update: "Update", cancel: "Cancel",
                 start_prompt: "Opening Protocol",
                 start_q: "How do you want to determine the color distribution in the first round?",
-                opt_white: "Highest Rated Player plays WHITE", opt_black: "Highest Rated Player plays BLACK", opt_rand: "Randomize",
+                opt_white: "Highest Rated plays WHITE", opt_black: "Highest Rated plays BLACK", opt_rand: "Randomize",
                 exclude_title: "Disqualify Player",
                 is_cheating: "Is the disqualification due to CHEATING?",
                 upload_report: "Upload Report (PDF)",
@@ -472,15 +497,15 @@
                 export_btn: "Download Standings Report"
             },
             ar: {
-                settings: "الإعدادات واللاعبين", pairings: "الجولات والمباريات", standings: "الترتيب العام",
-                save: "حفظ (JSON)", load: "استرجاع (JSON)", tour_name: "اسم البطولة",
-                sys_type: "نظام البطولة", tie_break: "نظام كسر التعادل",
+                settings: "اللاعبين", pairings: "المباريات", standings: "الترتيب العام",
+                save: "حفظ", load: "استرجاع", tour_name: "اسم البطولة",
+                sys_type: "نظام البطولة", tie_break: "كسر التعادل",
                 swiss: "النظام السويسري", knockout: "خروج المغلوب", rr: "دوري (ذهاب)", drr: "دوري (ذهاب وإياب)",
                 buchholz: "بوخولز العادي", bh_cut1: "بوخولز (حذف الأسوأ)", sonneborn: "سونبورن-بيرجر", direct: "المواجهة المباشرة",
-                pl_name: "اسم اللاعب", country: "الدولة", rating: "التقييم", title: "اللقب", add: "إضافة", actions: "إجراءات",
+                pl_name: "اسم اللاعب", country: "الدولة", rating: "التقييم", title: "اللقب", add: "إضافة", actions: "تحكم",
                 rank: "م", name: "اللاعب", games: "لعب", pts: "ن",
                 start: "بدء البطولة", next: "إنشاء الجولة", round: "جولة",
-                win: "فوز", loss: "خسارة", draw: "تعادل", export: "تصدير التقرير (صورة)", export_pair: "تصدير الجدول",
+                win: "فوز", loss: "خسارة", draw: "تعادل", export: "تصدير التقرير", export_pair: "تصدير الجدول",
                 rounds_count: "عدد الجولات",
                 finish_alert: "يجب إنهاء جميع المباريات أولاً!", over_alert: "انتهت البطولة!", round_limit: "تم الوصول للحد الأقصى للجولات!",
                 ko_draw_error: "لا يمكن الانتقال للجولة التالية بوجود تعادل في خروج المغلوب. يجب حسمه (أرمجدون) يدوياً!",
@@ -496,14 +521,13 @@
                 is_cheating: "هل سبب الإقصاء هو الغش؟",
                 upload_report: "رفع التقرير (PDF)",
                 reason_label: "سبب الإقصاء/الانسحاب",
-                confirm_ban: "تأكيد الحظر (BAN)", confirm_withdraw: "تأكيد الانسحاب",
-                status_banned: "تم إقصاؤه (غش)", status_withdrawn: "منسحب",
-                export_btn: "تحميل تقرير الترتيب"
+                confirm_ban: "تأكيد الحظر", confirm_withdraw: "تأكيد الانسحاب",
+                status_banned: "مقصي (غش)", status_withdrawn: "منسحب",
+                export_btn: "تحميل الترتيب"
             }
         };
 
         const generateUUID = () => Math.random().toString(36).substr(2, 9);
-
         const TITLE_RANKS = { 'GM': 8, 'WGM': 7, 'IM': 6, 'WIM': 5, 'FM': 4, 'WFM': 3, 'CM': 2, 'WCM': 1, '': 0 };
 
         // --- ENGINES V1.8: TERMINAL ---
@@ -593,7 +617,6 @@
                             let remS1 = s1.slice(1);
                             let remS2 = [...s2]; remS2.splice(j, 1);
 
-                            // Check strong color constraint validity before assigning if not relaxed
                             let p1W = p1.colorHistory.filter(c => c === 'W').length, p1B = p1.colorHistory.length - p1W;
                             let p2W = p2.colorHistory.filter(c => c === 'W').length, p2B = p2.colorHistory.length - p2W;
                             let p1Streak = p1.colorHistory.slice(-2).join(''), p2Streak = p2.colorHistory.slice(-2).join('');
@@ -607,7 +630,7 @@
                             let currentPenalty = 0;
                             if ((p1MustWhite && p2MustWhite) || (p1MustBlack && p2MustBlack)) {
                                 canPlayColored = relaxColors;
-                                currentPenalty += 10; // FIDE strict penalty
+                                currentPenalty += 10;
                             }
 
                             if (relaxColors && p1.score !== p2.score) {
@@ -707,10 +730,8 @@
 
                 if (group.length % 2 !== 0) {
                     if (nextScore !== null) {
-                        // Level 1: Strict Check. Don't pull a Down-floater who was repeatedly down-floated.
                         if (!tryFloaters(p => p.floatHistory !== 'D', false)) {
                             if (!tryFloaters(() => true, false)) {
-                                // Level 2: Relaxed Colors Check
                                 if (!tryFloaters(p => p.floatHistory !== 'D', true)) {
                                     tryFloaters(() => true, true);
                                 }
@@ -734,12 +755,9 @@
                     if (group.length > 2 && nextScore !== null) {
                         let pA = group.pop(), pB = group.pop();
                         scoreGroups[nextScore].unshift(pA, pB);
-
-                        // Retry with the rest of the group
                         validPairing = getPairingForUnpaired(group, false);
                         if (!validPairing) validPairing = getPairingForUnpaired(group, true);
                         if (!validPairing) validPairing = [];
-
                     } else if (group.length <= 2 && nextScore !== null) {
                         scoreGroups[nextScore].unshift(...group);
                         validPairing = [];
@@ -760,7 +778,6 @@
                     if (nextScore !== null) {
                         scoreGroups[nextScore].unshift(floaterPicked);
                     } else {
-                        // Only give BYE if it wasn't paired previously
                         if (!pairedIds.has(floaterPicked.id)) {
                             floaterPicked.hasBye = true;
                             pairs.push({ id: generateUUID(), white: floaterPicked, black: null, result: '1-0', isBye: true });
@@ -871,10 +888,10 @@
         const Toast = ({ notification, onClose }) => {
             if (!notification) return null;
             return (
-                <div className="fixed top-6 right-6 z-[100] animate-slide-in-right">
-                    <div className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-2xl border ${notification.type === 'error' ? 'bg-monolith-panel border-monolith-danger text-monolith-danger' : 'bg-monolith-panel border-monolith-blue text-monolith-blue'}`}>
+                <div className="fixed top-4 left-1/2 transform -translate-x-1/2 md:top-6 md:right-6 md:left-auto md:translate-x-0 z-[100] w-[90%] md:w-auto animate-slide-in-right">
+                    <div className={`flex items-center gap-3 px-4 py-3 md:px-6 md:py-4 rounded-lg shadow-2xl border ${notification.type === 'error' ? 'bg-monolith-panel border-monolith-danger text-monolith-danger' : 'bg-monolith-panel border-monolith-blue text-monolith-blue'}`}>
                         {notification.type === 'error' ? <span className="font-bold text-xl">!</span> : I.Check}
-                        <span className="font-bold text-monolith-text">{notification.msg}</span>
+                        <span className="font-bold text-sm md:text-base text-monolith-text">{notification.msg}</span>
                     </div>
                 </div>
             )
@@ -892,8 +909,8 @@
             return (
                 <div className={`m-dropdown ${open ? 'open' : ''}`} ref={ref}>
                     <div className="m-dropdown-head" onClick={() => setOpen(!open)}>
-                        <span>{selected.lbl}</span>
-                        <div className="text-monolith-sub">{I.Chevron}</div>
+                        <span className="truncate">{selected.lbl}</span>
+                        <div className="text-monolith-sub shrink-0">{I.Chevron}</div>
                     </div>
                     <div className="m-dropdown-body">
                         {options.map(o => (
@@ -907,11 +924,39 @@
             );
         };
 
+        const MobilePlayerCard = ({ p, index, onEdit, onDelete, onExclude, canDelete, t }) => (
+            <div className="bg-monolith-panel border border-monolith-border p-4 rounded-lg flex flex-col gap-3 shadow-sm relative overflow-hidden">
+                {p.status === 'banned' && <div className="absolute top-0 right-0 bg-monolith-danger text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">BANNED</div>}
+                {p.status === 'withdrawn' && <div className="absolute top-0 right-0 bg-gray-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-bl-lg">WD</div>}
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-2">
+                        <span className="text-monolith-sub font-mono text-xs">#{index + 1}</span>
+                        <span className="font-bold text-lg">{p.title && <span className="text-monolith-blue text-xs mr-1">{p.title}</span>}{p.name}</span>
+                    </div>
+                    <div className="flex gap-2">
+                        {p.status === 'banned' && p.banData && (
+                            <a href={p.banData} download={`Report_${p.name}.pdf`} className="p-2 text-monolith-danger hover:text-red-500 bg-monolith-bg rounded" title="Download Report">{I.File}</a>
+                        )}
+                        <button onClick={() => onEdit(p)} className="p-2 text-monolith-sub hover:text-monolith-text bg-monolith-bg rounded">{I.Edit}</button>
+                        {canDelete ? (
+                            <button onClick={() => onDelete(p.id)} className="p-2 text-monolith-danger hover:bg-red-900/20 bg-monolith-bg rounded">{I.Trash}</button>
+                        ) : (
+                            <button onClick={() => onExclude(p)} className="p-2 text-monolith-danger hover:bg-red-900/20 bg-monolith-bg rounded">{I.X}</button>
+                        )}
+                    </div>
+                </div>
+                <div className="flex gap-4 text-sm">
+                    <div className="bg-monolith-bg px-2 py-1 rounded border border-monolith-border flex-1 text-center"><span className="text-monolith-sub text-xs block">{t('rating')}</span><span className="font-mono font-bold">{p.rating}</span></div>
+                    <div className="bg-monolith-bg px-2 py-1 rounded border border-monolith-border flex-1 text-center"><span className="text-monolith-sub text-xs block">{t('country')}</span><span className="font-bold">{p.country || '-'}</span></div>
+                </div>
+            </div>
+        );
+
         const EditPlayerModal = ({ player, onClose, onSave, t }) => {
             const [data, setData] = useState({ ...player });
             return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-                    <div className="w-[400px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                    <div className="w-full md:w-[400px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
                             <h2 className="text-xl font-bold text-monolith-text">{t('edit_player')}</h2>
                             <button onClick={onClose} className="text-monolith-sub hover:text-monolith-text">{I.X}</button>
@@ -941,8 +986,8 @@
             const handleFile = (e) => { const file = e.target.files[0]; if (file) { const reader = new FileReader(); reader.onload = (x) => setReport(x.target.result); reader.readAsDataURL(file); } };
             const handleSubmit = () => onConfirm(player.id, isCheating, isCheating ? report : reason);
             return (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-                    <div className="w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                    <div className="w-full md:w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
                             <h2 className="text-xl font-bold text-monolith-danger flex items-center gap-2">{I.Skull} {t('exclude_title')}</h2>
                             <button onClick={onClose} className="text-monolith-sub hover:text-white">{I.X}</button>
@@ -963,17 +1008,17 @@
         };
 
         const StartModal = ({ onClose, onConfirm, t }) => (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
-                <div className="w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={onClose}>
+                <div className="w-full md:w-[450px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
                     <div className="mb-6 text-center">
                         <div className="text-monolith-orange mb-2 flex justify-center">{I.Play}</div>
                         <h2 className="text-xl font-bold text-monolith-text mb-2">{t('start_prompt')}</h2>
                         <p className="text-sm text-monolith-sub">{t('start_q')}</p>
                     </div>
                     <div className="space-y-3">
-                        <button onClick={() => onConfirm('white')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-blue p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-white border border-gray-400 group-hover:bg-monolith-blue group-hover:border-monolith-blue"></div><span className="text-monolith-text font-bold">{t('opt_white')}</span></button>
-                        <button onClick={() => onConfirm('black')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-orange p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-black border border-gray-600 group-hover:bg-monolith-orange group-hover:border-monolith-orange"></div><span className="text-monolith-text font-bold">{t('opt_black')}</span></button>
-                        <button onClick={() => onConfirm('random')} className="w-full bg-monolith-bg border border-monolith-border hover:border-purple-500 p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-gradient-to-br from-white to-black group-hover:from-purple-400 group-hover:to-purple-600"></div><span className="text-monolith-text font-bold">{t('opt_rand')}</span></button>
+                        <button onClick={() => onConfirm('white')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-blue p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-white border border-gray-400 group-hover:bg-monolith-blue group-hover:border-monolith-blue"></div><span className="text-monolith-text font-bold text-sm md:text-base">{t('opt_white')}</span></button>
+                        <button onClick={() => onConfirm('black')} className="w-full bg-monolith-bg border border-monolith-border hover:border-monolith-orange p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-black border border-gray-600 group-hover:bg-monolith-orange group-hover:border-monolith-orange"></div><span className="text-monolith-text font-bold text-sm md:text-base">{t('opt_black')}</span></button>
+                        <button onClick={() => onConfirm('random')} className="w-full bg-monolith-bg border border-monolith-border hover:border-purple-500 p-4 rounded flex items-center gap-4 transition-all group"><div className="w-4 h-4 rounded-full bg-gradient-to-br from-white to-black group-hover:from-purple-400 group-hover:to-purple-600"></div><span className="text-monolith-text font-bold text-sm md:text-base">{t('opt_rand')}</span></button>
                     </div>
                 </div>
             </div>
@@ -983,45 +1028,94 @@
             const isLocked = !match.black || match.white.status !== 'active' || (match.black && match.black.status !== 'active');
 
             return (
-                <div className={`match-card ${match.result ? 'finished' : ''} ${isLocked ? 'opacity-80' : ''}`}>
-                    <div className="flex-1 flex flex-col items-start">
-                        <div className="flex items-center gap-2">
-                            <span className={`text-lg font-bold ${match.result === '1-0' ? 'text-monolith-blue' : 'text-monolith-text'}`}>
-                                {match.white.title && <span className="text-xs text-monolith-blue mr-1">{match.white.title}</span>}{match.white.name}
-                            </span>
-                            {match.white.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.white.country}</span>}
-                            {match.white.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.white.status}</span>}
-                        </div>
-                        <span className="text-xs text-monolith-sub font-mono">{match.white.rating}</span>
-                    </div>
-                    <div className="flex items-center gap-4 mx-4">
-                        {match.result ? (
-                            <div className={`flex flex-col items-center gap-1 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isLocked && onResult(null)} title={isLocked ? "Match Locked" : "Click to Edit"}>
-                                <div className="text-2xl font-bold tracking-widest font-mono">
-                                    <span className={match.result === '1-0' ? 'text-monolith-blue' : ''}>{match.result.split('-')[0]}</span>
-                                    <span className="text-monolith-sub mx-1">-</span>
-                                    <span className={match.result === '0-1' ? 'text-monolith-orange' : ''}>{match.result.split('-')[1]}</span>
-                                </div>
-                                {!isLocked && <span className="text-[10px] text-monolith-sub opacity-50">EDIT</span>}
-                                {isLocked && <span className="text-[10px] text-monolith-danger opacity-80">{!match.black ? 'BYE' : 'LOCKED'}</span>}
+                <div className={`match-card ${match.result ? 'border-monolith-sub/30' : ''} ${isLocked ? 'opacity-80' : ''}`}>
+                    {/* Desktop View (Horizontal) */}
+                    <div className="hidden md:flex items-center justify-between">
+                        <div className="flex-1 flex flex-col items-start">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-lg font-bold ${match.result === '1-0' ? 'text-monolith-blue' : 'text-monolith-text'}`}>
+                                    {match.white.title && <span className="text-xs text-monolith-blue mr-1">{match.white.title}</span>}{match.white.name}
+                                </span>
+                                {match.white.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.white.country}</span>}
+                                {match.white.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.white.status}</span>}
                             </div>
-                        ) : (
-                            <div className="flex rounded overflow-hidden">
-                                <button onClick={() => onResult('1-0')} className="score-btn win-white" title="White Win">1-0</button>
-                                <button onClick={() => onResult('0.5-0.5')} className="score-btn draw" title="Draw">½</button>
-                                <button onClick={() => onResult('0-1')} className="score-btn win-black" title="Black Win">0-1</button>
+                            <span className="text-xs text-monolith-sub font-mono">{match.white.rating}</span>
+                        </div>
+                        <div className="flex items-center gap-4 mx-4">
+                            {match.result ? (
+                                <div className={`flex flex-col items-center gap-1 ${isLocked ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isLocked && onResult(null)} title={isLocked ? "Match Locked" : "Click to Edit"}>
+                                    <div className="text-2xl font-bold tracking-widest font-mono">
+                                        <span className={match.result === '1-0' ? 'text-monolith-blue' : ''}>{match.result.split('-')[0]}</span>
+                                        <span className="text-monolith-sub mx-1">-</span>
+                                        <span className={match.result === '0-1' ? 'text-monolith-orange' : ''}>{match.result.split('-')[1]}</span>
+                                    </div>
+                                    {!isLocked && <span className="text-[10px] text-monolith-sub opacity-50">EDIT</span>}
+                                    {isLocked && <span className="text-[10px] text-monolith-danger opacity-80">{!match.black ? 'BYE' : 'LOCKED'}</span>}
+                                </div>
+                            ) : (
+                                <div className="flex rounded overflow-hidden">
+                                    <button onClick={() => onResult('1-0')} className="score-btn win-white" title="White Win">1-0</button>
+                                    <button onClick={() => onResult('0.5-0.5')} className="score-btn draw" title="Draw">½</button>
+                                    <button onClick={() => onResult('0-1')} className="score-btn win-black" title="Black Win">0-1</button>
+                                </div>
+                            )}
+                        </div>
+                        <div className="flex-1 flex flex-col items-end">
+                            <div className="flex items-center gap-2">
+                                {match.black && match.black.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.black.status}</span>}
+                                {match.black?.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.black.country}</span>}
+                                <span className={`text-lg font-bold ${match.result === '0-1' ? 'text-monolith-orange' : 'text-monolith-text'}`}>
+                                    {match.black?.title && <span className="text-xs text-monolith-orange mr-1">{match.black.title}</span>}{match.black?.name || 'BYE'}
+                                </span>
+                            </div>
+                            <span className="text-xs text-monolith-sub font-mono">{match.black?.rating}</span>
+                        </div>
+                    </div>
+
+                    {/* Mobile View (Vertical Stack) */}
+                    <div className="flex flex-col md:hidden gap-3">
+                        <div className="flex justify-between items-center border-b border-monolith-border pb-3">
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-3 h-3 rounded-full bg-white border border-gray-400"></div>
+                                    <span className={`font-bold ${match.result === '1-0' ? 'text-monolith-blue' : ''}`}>
+                                        {match.white.title && <span className="text-xs text-monolith-blue mr-1">{match.white.title}</span>}
+                                        {match.white.name}
+                                        {match.white.status !== 'active' && <span className="ml-1 text-[10px] bg-red-900 text-red-200 px-1 rounded">X</span>}
+                                    </span>
+                                </div>
+                                <span className="text-xs text-monolith-sub ml-4 font-mono">{match.white.rating}</span>
+                            </div>
+                            {match.result && <span className={`text-xl font-bold font-mono ${match.result === '1-0' ? 'text-monolith-blue' : ''}`}>{match.result.split('-')[0]}</span>}
+                        </div>
+                        
+                        {!match.result && (
+                            <div className="flex rounded overflow-hidden w-full my-1">
+                                <button onClick={() => onResult('1-0')} className="score-btn win-white">1</button>
+                                <button onClick={() => onResult('0.5-0.5')} className="score-btn draw">½</button>
+                                <button onClick={() => onResult('0-1')} className="score-btn win-black">0</button>
                             </div>
                         )}
-                    </div>
-                    <div className="flex-1 flex flex-col items-end">
-                        <div className="flex items-center gap-2">
-                            {match.black && match.black.status !== 'active' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded uppercase">{match.black.status}</span>}
-                            {match.black?.country && <span className="text-xs text-monolith-sub bg-monolith-bg border border-monolith-border px-1 rounded">{match.black.country}</span>}
-                            <span className={`text-lg font-bold ${match.result === '0-1' ? 'text-monolith-orange' : 'text-monolith-text'}`}>
-                                {match.black?.title && <span className="text-xs text-monolith-orange mr-1">{match.black.title}</span>}{match.black?.name || 'BYE'}
-                            </span>
+                        {match.result && (
+                             <div className="text-center w-full my-1">
+                                <button className="text-[10px] text-monolith-sub bg-monolith-bg px-4 py-1.5 rounded uppercase font-bold tracking-wider active:scale-95 transition-all" onClick={() => !isLocked && onResult(null)}>Edit Result</button>
+                             </div>
+                        )}
+
+                        <div className="flex justify-between items-center pt-1">
+                            <div className="flex flex-col">
+                                <div className="flex items-center gap-1.5">
+                                    <div className="w-3 h-3 rounded-full bg-black border border-gray-600"></div>
+                                    <span className={`font-bold ${match.result === '0-1' ? 'text-monolith-orange' : ''}`}>
+                                        {match.black?.title && <span className="text-xs text-monolith-orange mr-1">{match.black.title}</span>}
+                                        {match.black?.name || 'BYE'}
+                                        {match.black && match.black.status !== 'active' && <span className="ml-1 text-[10px] bg-red-900 text-red-200 px-1 rounded">X</span>}
+                                    </span>
+                                </div>
+                                <span className="text-xs text-monolith-sub ml-4 font-mono">{match.black?.rating}</span>
+                            </div>
+                             {match.result && <span className={`text-xl font-bold font-mono ${match.result === '0-1' ? 'text-monolith-orange' : ''}`}>{match.result.split('-')[1]}</span>}
                         </div>
-                        <span className="text-xs text-monolith-sub font-mono">{match.black?.rating}</span>
                     </div>
                 </div>
             );
@@ -1054,7 +1148,6 @@
             const stats = useMemo(() => {
                 let s = players.map(p => ({ ...p, score: 0, games: 0, wins: 0, draws: 0, loss: 0, bh: 0, bhCut1: 0, sb: 0, deScore: 0, history: [], colorHistory: [], oppScores: [], floatHistory: [], unplayedGames: 0 }));
                 rounds.forEach(r => {
-                    // Evaluate float directions *before* score is mutated for this round
                     r.pairings.forEach(m => {
                         let w = s.find(p => p.id === m.white.id); let b = m.black ? s.find(p => p.id === m.black.id) : null;
                         if (w && b) {
@@ -1083,11 +1176,9 @@
                     });
                 });
 
-                // Calculate Tie-Break virtual scores for Buchholz before applying to oppScores
                 s.forEach(p => {
                     p.tieBreakScore = p.score;
                     if (p.unplayedGames > 0 && settings.tieBreak !== 'direct') {
-                        // FIDE: remove the won point from unplayed/BYE and add 0.5 instead for opponent evaluation
                         p.tieBreakScore -= (p.unplayedGames * 0.5);
                     }
                 });
@@ -1111,11 +1202,11 @@
                                 let unplayedRoundCount = Math.max(0, totalRounds - r.number);
                                 let virtualScore = scoreBeforeBye + 0.5 + (0.5 * unplayedRoundCount);
                                 p.oppScores.push(virtualScore);
-                                p.sb += 0.5 * virtualScore; // FIDE C.04.5: Unplayed games are treated as a Draw against the Virtual Opponent
+                                p.sb += 0.5 * virtualScore; 
                             } else if (m.result) {
                                 let opp = s.find(x => x.id === (m.white.id === p.id ? m.black.id : m.white.id));
                                 if (opp) {
-                                    p.oppScores.push(opp.tieBreakScore); // FIDE Virtual opponent score
+                                    p.oppScores.push(opp.tieBreakScore); 
                                     if ((m.white.id === p.id && m.result === '1-0') || (m.black.id === p.id && m.result === '0-1')) p.sb += opp.tieBreakScore;
                                     else if (m.result === '0.5-0.5') p.sb += 0.5 * opp.tieBreakScore;
                                 }
@@ -1124,7 +1215,6 @@
                     });
                 });
 
-                // FIX: FIDE Multi-way Direct Encounter Calculator
                 s.forEach(p => {
                     p.deScore = 0;
                     let tiedOpps = s.filter(x => x.score === p.score && x.id !== p.id);
@@ -1176,7 +1266,6 @@
                         return { ...p, score: s.score, history: s.history, colorHistory: s.colorHistory, floatHistory: lastFloat, hasBye: s.history.some(h => h.oppId === 'BYE') };
                     });
 
-                // Extra layer of initial sorting inside ranking pool includes title priority.
                 logicP.sort((a, b) => b.score - a.score || b.rating - a.rating || TITLE_RANKS[b.title || ''] - TITLE_RANKS[a.title || ''] || (a.name || '').localeCompare(b.name || ''));
 
                 let n = logicP.length;
@@ -1295,10 +1384,11 @@
             };
 
             return (
-                <div className="flex h-screen bg-monolith-bg text-monolith-text transition-colors duration-300">
+                <div className="flex h-[100dvh] bg-monolith-bg text-monolith-text transition-colors duration-300">
                     <Toast notification={notif} onClose={() => setNotif(null)} />
 
-                    <aside className="w-64 bg-monolith-panel border-e border-monolith-border flex flex-col shadow-lg z-20">
+                    {/* Desktop Sidebar */}
+                    <aside className="hidden md:flex w-64 bg-monolith-panel border-e border-monolith-border flex-col shadow-lg z-20">
                         <div className="p-6 border-b border-monolith-border">
                             <h1 className="text-xl font-bold tracking-wider animate-fade-in">CHESS <span className="text-monolith-blue">DIRECTOR</span></h1>
                             <div className="flex items-center gap-2 mt-2">
@@ -1321,13 +1411,12 @@
                             <button onClick={exportToJson} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-blue hover:text-monolith-blue">{I.Save} {t('save')}</button>
                             <input type="file" accept=".json" onChange={loadFromJson} className="hidden" id="imp" />
                             <button onClick={() => document.getElementById('imp').click()} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-orange hover:text-monolith-orange">{I.Upload} {t('load')}</button>
-                            <div className="text-[10px] text-monolith-sub text-center pt-4 opacity-50 font-mono">
-                                © 2026 Developed by Adham Mohamed
-                            </div>
                         </div>
                     </aside>
 
-                    <main className="flex-1 flex flex-col overflow-hidden relative">
+                    {/* Main Content Area */}
+                    <main className="flex-1 flex flex-col overflow-hidden relative pb-[60px] md:pb-0">
+                        {/* Hidden Export Div */}
                         <div className="fixed top-0 left-[-9999px] w-[1200px]" ref={exportRef}>
                             <div className="bg-[#09090b] p-10 text-white min-h-screen">
                                 <h1 className="text-4xl font-bold mb-4">OFFICIAL TOURNAMENT REPORT</h1>
@@ -1338,93 +1427,131 @@
                             </div>
                         </div>
 
-                        <header className="h-16 bg-monolith-panel border-b border-monolith-border flex items-center justify-between px-8 shadow-sm animate-slide-up">
-                            <div className="font-bold text-lg">{settings.name || "Untitled Tournament"}</div>
-                            <div className="flex gap-2 text-xs font-mono"><span className="px-2 py-1 bg-monolith-bg rounded text-monolith-blue border border-monolith-border uppercase">{settings.type}</span></div>
+                        {/* Top Header */}
+                        <header className="h-16 bg-monolith-panel border-b border-monolith-border flex items-center justify-between px-4 md:px-8 shadow-sm shrink-0">
+                            <div className="font-bold text-lg truncate flex-1">{settings.name || "Untitled Tournament"}</div>
+                            <div className="flex items-center gap-3">
+                                {/* Mobile Header Actions */}
+                                <div className="md:hidden flex items-center gap-2">
+                                    <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="p-2 text-monolith-sub">{theme === 'dark' ? I.Sun : I.Moon}</button>
+                                    <button onClick={() => setLang(lang === 'en' ? 'ar' : 'en')} className="p-2 text-monolith-sub font-bold text-xs">{lang === 'en' ? 'AR' : 'EN'}</button>
+                                </div>
+                                <div className="hidden md:flex gap-2 text-xs font-mono"><span className="px-2 py-1 bg-monolith-bg rounded text-monolith-blue border border-monolith-border uppercase">{settings.type}</span></div>
+                            </div>
                         </header>
 
-                        <div className="flex-1 overflow-auto p-8 custom-scrollbar">
+                        <div className="flex-1 overflow-auto p-4 md:p-8 custom-scrollbar">
                             {view === 'settings' && (
-                                <div key="settings" className="max-w-4xl mx-auto space-y-6 animate-fade-in">
-                                    <div className={`grid grid-cols-1 ${settings.type === 'swiss' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
+                                <div key="settings" className="max-w-4xl mx-auto space-y-4 md:space-y-6 animate-fade-in">
+                                    {/* Settings Form */}
+                                    <div className={`grid grid-cols-1 ${settings.type === 'swiss' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 md:gap-6 bg-monolith-panel md:bg-transparent p-4 md:p-0 rounded border border-monolith-border md:border-0`}>
                                         <div className="md:col-span-1">
-                                            <label className="block text-sm text-monolith-sub mb-2">{t('tour_name')}</label>
+                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('tour_name')}</label>
                                             <input className="m-input" maxLength={49} value={settings.name} onChange={e => setSettings({ ...settings, name: e.target.value })} placeholder="..." />
                                         </div>
                                         <div>
-                                            <label className="block text-sm text-monolith-sub mb-2">{t('sys_type')}</label>
+                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('sys_type')}</label>
                                             <CustomDropdown value={settings.type} onChange={e => setSettings({ ...settings, type: e.target.value })} options={[{ val: 'swiss', lbl: t('swiss') }, { val: 'ko', lbl: t('knockout') }, { val: 'rr', lbl: t('rr') }, { val: 'drr', lbl: t('drr') }]} />
                                         </div>
                                         {settings.type === 'swiss' && (
                                             <div>
-                                                <label className="block text-sm text-monolith-sub mb-2">{t('rounds_count')}</label>
+                                                <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('rounds_count')}</label>
                                                 <input type="number" className="m-input" value={settings.roundsCount} onChange={e => setSettings({ ...settings, roundsCount: parseInt(e.target.value) })} />
                                             </div>
                                         )}
                                         <div>
-                                            <label className="block text-sm text-monolith-sub mb-2">{t('tie_break')}</label>
+                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('tie_break')}</label>
                                             <CustomDropdown value={settings.tieBreak} onChange={e => setSettings({ ...settings, tieBreak: e.target.value })} options={[{ val: 'bh_cut1', lbl: t('bh_cut1') }, { val: 'bh', lbl: t('buchholz') }, { val: 'sb', lbl: t('sonneborn') }, { val: 'direct', lbl: t('direct') }]} />
                                             <p className="text-[11px] text-monolith-sub mt-2 opacity-80">{t(`desc_${settings.tieBreak === 'direct' ? 'de' : settings.tieBreak}`)}</p>
                                         </div>
                                     </div>
 
+                                    {/* Add Player Box */}
                                     <div className="bg-monolith-panel rounded border border-monolith-border overflow-hidden shadow-sm animate-slide-up">
                                         <div className="p-4 bg-monolith-bg border-b border-monolith-border flex gap-3 flex-wrap md:flex-nowrap">
                                             <input className="m-input md:flex-1 w-full" placeholder={t('pl_name')} value={pInput.name} onChange={e => setPInput({ ...pInput, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
-                                            <select className="m-input md:w-28 w-1/3" value={pInput.title} onChange={e => setPInput({ ...pInput, title: e.target.value })}>
+                                            <select className="m-input md:w-28 w-[30%]" value={pInput.title} onChange={e => setPInput({ ...pInput, title: e.target.value })}>
                                                 <option value="">{t('title')}</option>
                                                 <option value="GM">GM</option><option value="WGM">WGM</option>
                                                 <option value="IM">IM</option><option value="WIM">WIM</option>
                                                 <option value="FM">FM</option><option value="WFM">WFM</option>
                                                 <option value="CM">CM</option><option value="WCM">WCM</option>
                                             </select>
-                                            <input className="m-input md:w-24 w-1/3" placeholder={t('country')} value={pInput.country} onChange={e => setPInput({ ...pInput, country: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
-                                            <input className="m-input md:w-24 w-1/4" type="number" placeholder={t('rating')} value={pInput.rating} onChange={e => setPInput({ ...pInput, rating: parseInt(e.target.value) || 0 })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
-                                            <button className="btn-primary w-full md:w-auto" onClick={addPlayer}>{t('add')}</button>
+                                            <input className="m-input md:w-24 w-[30%]" placeholder={t('country')} value={pInput.country} onChange={e => setPInput({ ...pInput, country: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
+                                            <input className="m-input md:w-24 w-[30%]" type="number" placeholder={t('rating')} value={pInput.rating} onChange={e => setPInput({ ...pInput, rating: parseInt(e.target.value) || 0 })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
+                                            <button className="btn-primary w-full md:w-auto mt-2 md:mt-0" onClick={addPlayer}>{t('add')}</button>
                                         </div>
-                                        <table className="data-grid">
-                                            <thead><tr><th className="w-12 text-center">#</th><th>{t('name')}</th><th className="w-24">{t('rating')}</th><th className="w-24 text-center">{t('title')}</th><th className="w-24">{t('country')}</th><th className="w-24 text-center">{t('actions')}</th></tr></thead>
-                                            <tbody>
-                                                {players.map((p, i) => <tr key={p.id} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}><td className="text-center text-monolith-sub font-mono">{i + 1}</td><td className="font-bold flex items-center gap-2 mt-2">{p.name} {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">BAN</span>} {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-200 px-1 rounded">WD</span>}</td><td className="font-mono text-monolith-sub">{p.rating}</td><td className="text-monolith-blue text-center text-xs font-bold">{p.title}</td><td>{p.country}</td><td className="text-center flex justify-center gap-2">
+                                        
+                                        {/* Desktop Player Grid */}
+                                        <div className="hidden md:block">
+                                            <table className="data-grid">
+                                                <thead><tr><th className="w-12 text-center">#</th><th>{t('name')}</th><th className="w-24">{t('rating')}</th><th className="w-24 text-center">{t('title')}</th><th className="w-24">{t('country')}</th><th className="w-24 text-center">{t('actions')}</th></tr></thead>
+                                                <tbody>
+                                                    {players.map((p, i) => <tr key={p.id} className="animate-fade-in" style={{ animationDelay: `${i * 50}ms` }}><td className="text-center text-monolith-sub font-mono">{i + 1}</td><td className="font-bold flex items-center gap-2 mt-2">{p.name} {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">BAN</span>} {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-200 px-1 rounded">WD</span>}</td><td className="font-mono text-monolith-sub">{p.rating}</td><td className="text-monolith-blue text-center text-xs font-bold">{p.title}</td><td>{p.country}</td><td className="text-center flex justify-center gap-2">
 
-                                                    {p.status === 'banned' && p.banData && (
-                                                        <a href={p.banData} download={`Report_${p.name}.pdf`} className="btn-action hover:text-red-500" title="Download Report">{I.File}</a>
-                                                    )}
+                                                        {p.status === 'banned' && p.banData && (
+                                                            <a href={p.banData} download={`Report_${p.name}.pdf`} className="btn-action hover:text-red-500" title="Download Report">{I.File}</a>
+                                                        )}
 
-                                                    <button onClick={() => setEditingPlayer(p)} className="btn-action">{I.Edit}</button>
+                                                        <button onClick={() => setEditingPlayer(p)} className="btn-action">{I.Edit}</button>
 
-                                                    {rounds.length === 0 ? (
-                                                        <button onClick={() => handleDelete(p.id)} className="btn-action danger" title="Delete Forever">{I.Trash}</button>
-                                                    ) : (
-                                                        <button onClick={() => setExcludingPlayer(p)} className="btn-action danger" title="Disqualify/Ban">{I.X}</button>
-                                                    )}
+                                                        {rounds.length === 0 ? (
+                                                            <button onClick={() => handleDelete(p.id)} className="btn-action danger" title="Delete Forever">{I.Trash}</button>
+                                                        ) : (
+                                                            <button onClick={() => setExcludingPlayer(p)} className="btn-action danger" title="Disqualify/Ban">{I.X}</button>
+                                                        )}
 
-                                                </td></tr>)}
-                                            </tbody>
-                                        </table>
+                                                    </td></tr>)}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile Player Cards */}
+                                        <div className="md:hidden flex flex-col gap-3 p-3 bg-monolith-bg">
+                                            {players.map((p, i) => (
+                                                <MobilePlayerCard 
+                                                    key={p.id} 
+                                                    p={p} 
+                                                    index={i} 
+                                                    t={t} 
+                                                    onEdit={() => setEditingPlayer(p)} 
+                                                    onDelete={() => handleDelete(p.id)} 
+                                                    onExclude={() => setExcludingPlayer(p)}
+                                                    canDelete={rounds.length === 0}
+                                                />
+                                            ))}
+                                            {players.length === 0 && <div className="text-center text-monolith-sub py-6 text-sm">No players added yet.</div>}
+                                        </div>
                                     </div>
+
+                                    <div className="md:hidden flex gap-2">
+                                        <button onClick={() => document.getElementById('imp').click()} className="btn-secondary flex-1 text-sm flex justify-center gap-2">{I.Upload} Load</button>
+                                        <button onClick={exportToJson} className="btn-secondary flex-1 text-sm flex justify-center gap-2">{I.Save} Save</button>
+                                    </div>
+
                                     <button onClick={initiateStart} className="w-full py-4 bg-monolith-orange text-white font-bold text-lg rounded shadow-lg hover:brightness-110 transition-all active:scale-95">{rounds.length > 0 ? t('next') : t('start')}</button>
                                 </div>
                             )}
 
                             {view === 'pairings' && (
-                                <div key="pairings" className="max-w-6xl mx-auto space-y-6 animate-fade-in">
-                                    <div className="flex justify-between items-center">
-                                        <div className="flex gap-2 overflow-x-auto">
+                                <div key="pairings" className="max-w-6xl mx-auto space-y-4 md:space-y-6 animate-fade-in">
+                                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                        <div className="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
                                             {rounds.map((r, i) => (
                                                 <button key={`rnd-${i}`} onClick={() => setSelectedRound(i)}
-                                                    className={`px-4 py-2 rounded text-sm font-bold border transition-all ${selectedRound === i ? 'bg-monolith-blue text-white border-monolith-blue shadow-[0_0_10px_rgba(0,169,255,0.3)]' : 'bg-transparent text-monolith-sub border-monolith-border hover:border-gray-500'}`}>
+                                                    className={`px-4 py-2 rounded text-sm font-bold border transition-all shrink-0 ${selectedRound === i ? 'bg-monolith-blue text-white border-monolith-blue md:shadow-[0_0_10px_rgba(0,169,255,0.3)]' : 'bg-transparent text-monolith-sub border-monolith-border hover:border-gray-500'}`}>
                                                     {t('round')} {r.number}
                                                 </button>
                                             ))}
+                                            {rounds.length === 0 && <span className="text-monolith-sub text-sm py-2">No rounds generated.</span>}
                                         </div>
-                                        <div className="flex gap-2">
-                                            <button onClick={exportPairings} className="btn-secondary flex items-center gap-2 text-sm">{I.Image} {t('export_pair')}</button>
-                                            <button onClick={() => initiateStart()} className="btn-primary flex items-center gap-2">{I.Play} {t('next')}</button>
+                                        <div className="flex gap-2 w-full md:w-auto">
+                                            <button onClick={exportPairings} className="btn-secondary flex items-center justify-center gap-2 text-sm flex-1 md:flex-none">{I.Image} <span className="hidden md:inline">{t('export_pair')}</span></button>
+                                            <button onClick={() => initiateStart()} className="btn-primary flex items-center justify-center gap-2 flex-1 md:flex-none">{I.Play} {t('next')}</button>
                                         </div>
                                     </div>
-                                    <div className="space-y-4" ref={pairRef}>
-                                        <div className="text-center font-bold text-xl mb-4 bg-monolith-panel p-2 rounded border border-monolith-border">ROUND {selectedRound + 1} PAIRINGS</div>
+                                    <div className="space-y-3 md:space-y-4" ref={pairRef}>
+                                        <div className="text-center font-bold text-lg md:text-xl mb-2 md:mb-4 bg-monolith-panel p-2 rounded border border-monolith-border">ROUND {selectedRound + 1} PAIRINGS</div>
                                         {rounds[selectedRound]?.pairings.map((m, i) => (
                                             <div key={m.id} className="animate-slide-up" style={{ animationDelay: `${i * 50}ms` }}>
                                                 <MatchCard match={m} t={t} onResult={(res) => setRes(selectedRound, m.id, res)} />
@@ -1437,54 +1564,95 @@
 
                             {view === 'standings' && (
                                 <div key="standings" className="max-w-5xl mx-auto space-y-4 animate-fade-in">
-                                    <div className="flex justify-end"><button onClick={exportImage} className="btn-secondary flex items-center gap-2">{I.Image} {t('export_btn')}</button></div>
-                                    <div className="bg-monolith-panel rounded border border-monolith-border p-6 shadow-xl relative overflow-hidden">
-                                        <div className="flex justify-between items-end mb-6 border-b border-monolith-border pb-4">
+                                    <div className="bg-monolith-panel rounded border border-monolith-border md:p-6 shadow-xl relative overflow-hidden">
+                                        <div className="hidden md:flex justify-between items-end mb-6 border-b border-monolith-border pb-4">
                                             <div><h1 className="text-3xl font-bold tracking-tight">TOURNAMENT <span className="text-monolith-blue">STANDINGS</span></h1><p className="text-monolith-orange text-sm uppercase">{settings.name}</p></div>
-                                            <div className="text-right text-xs text-monolith-sub font-mono">TB: {settings.tieBreak.toUpperCase()}</div>
+                                            <div className="flex flex-col items-end gap-2">
+                                                <button onClick={exportImage} className="btn-secondary flex items-center gap-2 text-sm">{I.Image} {t('export_btn')}</button>
+                                                <div className="text-right text-xs text-monolith-sub font-mono">TB: {settings.tieBreak.toUpperCase()}</div>
+                                            </div>
                                         </div>
-                                        <table className="data-grid">
-                                            <thead><tr><th className="w-16 text-center">{t('rank')}</th><th>{t('name')}</th><th className="text-center">{t('games')}</th><th className="text-center">{t('pts')}</th><th className="text-center">TB</th></tr></thead>
-                                            <tbody>
-                                                {stats.map((p, i) => (<tr key={p.id} onClick={() => setSelectedPlayer(p)} className="animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
-                                                    <td className="text-center font-bold text-monolith-blue">{i + 1}</td>
-                                                    <td>
-                                                        <div className="font-bold flex items-center gap-2">
-                                                            {p.title && <span className="text-xs text-monolith-blue border-b border-monolith-blue pb-[1px]">{p.title}</span>}
-                                                            <span>{p.country}</span>{p.name}
-                                                            {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">{t('status_banned')}</span>}
-                                                            {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-300 px-1 rounded">{t('status_withdrawn')}</span>}
+                                        
+                                        {/* Desktop Standings Table */}
+                                        <div className="hidden md:block">
+                                            <table className="data-grid">
+                                                <thead><tr><th className="w-16 text-center">{t('rank')}</th><th>{t('name')}</th><th className="text-center">{t('games')}</th><th className="text-center">{t('pts')}</th><th className="text-center">TB</th></tr></thead>
+                                                <tbody>
+                                                    {stats.map((p, i) => (<tr key={p.id} onClick={() => setSelectedPlayer(p)} className="animate-slide-up" style={{ animationDelay: `${i * 30}ms` }}>
+                                                        <td className="text-center font-bold text-monolith-blue">{i + 1}</td>
+                                                        <td>
+                                                            <div className="font-bold flex items-center gap-2">
+                                                                {p.title && <span className="text-xs text-monolith-blue border-b border-monolith-blue pb-[1px]">{p.title}</span>}
+                                                                <span>{p.country}</span>{p.name}
+                                                                {p.status === 'banned' && <span className="text-[10px] bg-red-900 text-red-200 px-1 rounded">{t('status_banned')}</span>}
+                                                                {p.status === 'withdrawn' && <span className="text-[10px] bg-gray-700 text-gray-300 px-1 rounded">{t('status_withdrawn')}</span>}
+                                                            </div>
+                                                            <div className="text-xs text-monolith-sub">{p.rating}</div>
+                                                        </td>
+                                                        <td className="text-center text-monolith-sub">{p.games}</td>
+                                                        <td className="text-center font-bold text-xl text-monolith-orange">{p.score}</td>
+                                                        <td className="text-center font-mono text-monolith-sub">{settings.tieBreak === 'direct' ? p.deScore : (settings.tieBreak === 'bh' ? p.bh : (settings.tieBreak === 'bh_cut1' ? p.bhCut1 : p.sb)).toFixed(1)}</td>
+                                                    </tr>))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        {/* Mobile Standings Cards */}
+                                        <div className="md:hidden flex flex-col gap-2 p-3">
+                                            <div className="flex justify-between items-center mb-2">
+                                                <div className="text-xs text-monolith-sub font-mono">TB: {settings.tieBreak.toUpperCase()}</div>
+                                                <button onClick={exportImage} className="btn-secondary flex items-center gap-2 text-xs py-1.5">{I.Image} Export</button>
+                                            </div>
+                                            {stats.map((p, i) => (
+                                                <div key={p.id} onClick={() => setSelectedPlayer(p)} className="bg-monolith-bg border border-monolith-border p-3 rounded flex items-center justify-between cursor-pointer active:scale-95 transition-all relative overflow-hidden">
+                                                    {p.status === 'banned' && <div className="absolute top-0 right-0 bg-monolith-danger text-white text-[8px] font-bold px-1.5 py-0.5 rounded-bl">BAN</div>}
+                                                    {p.status === 'withdrawn' && <div className="absolute top-0 right-0 bg-gray-700 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-bl">WD</div>}
+                                                    
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded bg-monolith-panel border border-monolith-border flex items-center justify-center font-bold text-monolith-blue shrink-0">{i + 1}</div>
+                                                        <div className="flex flex-col">
+                                                            <div className="font-bold text-sm truncate max-w-[140px]">{p.title && <span className="text-[10px] text-monolith-blue mr-1">{p.title}</span>}{p.name}</div>
+                                                            <div className="text-xs text-monolith-sub">TB: {settings.tieBreak === 'direct' ? p.deScore : (settings.tieBreak === 'bh' ? p.bh : (settings.tieBreak === 'bh_cut1' ? p.bhCut1 : p.sb)).toFixed(1)}</div>
                                                         </div>
-                                                        <div className="text-xs text-monolith-sub">{p.rating}</div>
-                                                    </td>
-                                                    <td className="text-center text-monolith-sub">{p.games}</td>
-                                                    <td className="text-center font-bold text-xl text-monolith-orange">{p.score}</td>
-                                                    <td className="text-center font-mono text-monolith-sub">{settings.tieBreak === 'direct' ? p.deScore : (settings.tieBreak === 'bh' ? p.bh : (settings.tieBreak === 'bh_cut1' ? p.bhCut1 : p.sb)).toFixed(1)}</td>
-                                                </tr>))}
-                                            </tbody>
-                                        </table>
+                                                    </div>
+                                                    <div className="font-bold text-2xl text-monolith-orange px-2">{p.score}</div>
+                                                </div>
+                                            ))}
+                                            {stats.length === 0 && <div className="text-center text-monolith-sub py-6">No players yet.</div>}
+                                        </div>
                                     </div>
                                 </div>
                             )}
                         </div>
                     </main>
 
+                    {/* Mobile Bottom Navigation Bar */}
+                    <nav className="md:hidden fixed bottom-0 left-0 w-full bg-monolith-panel border-t border-monolith-border flex justify-around items-center p-2 z-50 shadow-[0_-4px_10px_rgba(0,0,0,0.2)]">
+                        {['settings', 'pairings', 'standings'].map((v) => (
+                            <button key={v} onClick={() => setView(v)} className={`mobile-nav-item ${view === v ? 'active' : ''}`}>
+                                {v === 'settings' ? I.Users : v === 'pairings' ? I.List : I.Trophy}
+                                <span className="text-[10px] uppercase tracking-wider">{t(v)}</span>
+                            </button>
+                        ))}
+                    </nav>
+
                     {/* Modals */}
                     {startModalOpen && <StartModal onClose={() => setStartModalOpen(false)} onConfirm={confirmStart} t={t} />}
                     {editingPlayer && <EditPlayerModal player={editingPlayer} onClose={() => setEditingPlayer(null)} onSave={handleUpdatePlayer} t={t} />}
                     {excludingPlayer && <ExcludeModal player={excludingPlayer} onClose={() => setExcludingPlayer(null)} onConfirm={handleDisqualify} t={t} />}
 
-                    {selectedPlayer && <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedPlayer(null)}>
-                        <div className="w-[500px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
+                    {/* Player Stats Modal */}
+                    {selectedPlayer && <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in" onClick={() => setSelectedPlayer(null)}>
+                        <div className="w-full md:w-[500px] bg-monolith-panel border border-monolith-border rounded-lg shadow-2xl p-6 animate-scale-in" onClick={e => e.stopPropagation()}>
                             <div className="flex justify-between mb-6 border-b border-monolith-border pb-4">
-                                <div><h2 className="text-2xl font-bold text-monolith-text flex gap-2"><span>{selectedPlayer.country}</span>{selectedPlayer.name}</h2><p className="text-monolith-blue font-mono">{selectedPlayer.rating} ELO</p></div>
+                                <div><h2 className="text-xl md:text-2xl font-bold text-monolith-text flex gap-2"><span>{selectedPlayer.country}</span>{selectedPlayer.name}</h2><p className="text-monolith-blue font-mono">{selectedPlayer.rating} ELO</p></div>
                                 <div className="flex gap-2">
                                     {selectedPlayer.status === 'banned' && selectedPlayer.banData && (<a href={selectedPlayer.banData} download="Report.pdf" className="flex items-center gap-1 text-xs bg-monolith-danger text-white px-2 py-1 rounded hover:opacity-80" onClick={e => e.stopPropagation()}>{I.File} Report</a>)}
                                     <button onClick={() => setSelectedPlayer(null)} className="text-monolith-sub hover:text-monolith-text">{I.X}</button>
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-2 mb-6">{['win', 'draw', 'loss'].map((k, i) => <div key={k} className="bg-monolith-bg border border-monolith-border rounded p-3 text-center"><div className="text-xs text-monolith-sub">{t(k)}</div><div className={`font-bold text-xl ${i === 0 ? 'text-green-500' : i === 1 ? 'text-monolith-sub' : 'text-red-500'}`}>{i === 0 ? selectedPlayer.wins : i === 1 ? selectedPlayer.draws : selectedPlayer.loss}</div></div>)}</div>
-                            <div className="space-y-2 max-h-48 overflow-y-auto">{selectedPlayer.history?.map((h, i) => <div key={`hist-${i}`} className="flex justify-between bg-monolith-bg p-2 rounded text-sm border border-monolith-border"><span className="text-monolith-sub">{t('round')} {h.round}: {h.oppName}</span><span className="font-bold">{h.result}</span></div>)}</div>
+                            <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-2">{selectedPlayer.history?.map((h, i) => <div key={`hist-${i}`} className="flex justify-between bg-monolith-bg p-2 md:p-3 rounded text-sm border border-monolith-border"><span className="text-monolith-sub">{t('round')} {h.round}: {h.oppName}</span><span className="font-bold">{h.result}</span></div>)}</div>
                         </div>
                     </div>}
                 </div>
@@ -1494,6 +1662,5 @@
         root.render(<App />);
     </script>
 </body>
-
 
 </html>
