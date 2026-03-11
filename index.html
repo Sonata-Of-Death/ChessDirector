@@ -1537,23 +1537,31 @@
                                         </div>
                                     </div>
 
-                                    <div className="bg-monolith-panel rounded border border-monolith-border overflow-hidden shadow-sm animate-slide-up">
-                                        <div className="p-4 bg-monolith-bg border-b border-monolith-border flex gap-3 flex-wrap md:flex-nowrap">
+                                    <div className="bg-monolith-panel rounded border border-monolith-border overflow-visible shadow-sm animate-slide-up">
+                                        <div className="p-4 bg-monolith-bg border-b border-monolith-border rounded-t flex gap-3 flex-wrap md:flex-nowrap relative z-40">
                                             <input className="m-input md:flex-1 w-full" placeholder={t('pl_name')} value={pInput.name} onChange={e => setPInput({ ...pInput, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
-                                            <select className="m-input md:w-28 w-[30%]" value={pInput.title} onChange={e => setPInput({ ...pInput, title: e.target.value })}>
-                                                <option value="">{t('title')}</option>
-                                                <option value="GM">GM</option><option value="WGM">WGM</option>
-                                                <option value="IM">IM</option><option value="WIM">WIM</option>
-                                                <option value="FM">FM</option><option value="WFM">WFM</option>
-                                                <option value="CM">CM</option><option value="WCM">WCM</option>
-                                            </select>
+                                            
+                                            <div className="md:w-28 w-[30%] shrink-0">
+                                                <CustomDropdown 
+                                                    value={pInput.title} 
+                                                    onChange={e => setPInput({ ...pInput, title: e.target.value })} 
+                                                    options={[
+                                                        { val: '', lbl: t('title') },
+                                                        { val: 'GM', lbl: 'GM' }, { val: 'WGM', lbl: 'WGM' },
+                                                        { val: 'IM', lbl: 'IM' }, { val: 'WIM', lbl: 'WIM' },
+                                                        { val: 'FM', lbl: 'FM' }, { val: 'WFM', lbl: 'WFM' },
+                                                        { val: 'CM', lbl: 'CM' }, { val: 'WCM', lbl: 'WCM' }
+                                                    ]} 
+                                                />
+                                            </div>
+
                                             <input className="m-input md:w-24 w-[30%]" placeholder={t('country')} value={pInput.country} onChange={e => setPInput({ ...pInput, country: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
                                             <input className="m-input md:w-24 w-[30%]" type="number" placeholder={t('rating')} value={pInput.rating} onChange={e => setPInput({ ...pInput, rating: parseInt(e.target.value) || 0 })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
                                             <button className="btn-primary w-full md:w-auto mt-2 md:mt-0" onClick={addPlayer}>{t('add')}</button>
                                         </div>
                                         
                                         {/* Desktop Player Grid */}
-                                        <div className="hidden md:block">
+                                        <div className="hidden md:block relative z-30">
                                             <table className="data-grid">
                                                 <thead><tr><th className="w-12 text-center">#</th><th>{t('name')}</th><th className="w-24">{t('rating')}</th><th className="w-24 text-center">{t('title')}</th><th className="w-24">{t('country')}</th><th className="w-24 text-center">{t('actions')}</th></tr></thead>
                                                 <tbody>
