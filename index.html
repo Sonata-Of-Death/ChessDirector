@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Monolith Chess Director | V1.0 BETA</title>
+    <title>Chess Director</title>
+    <link rel="icon" href="icon.jpg" type="image/jpeg">
 
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -401,26 +402,7 @@
         }
 
         .score-btn:not(:first-child):not(:last-child) {
-            border-inline-start: none;
-        }
-
-        .score-btn.win-white:active,
-        .score-btn.active-white {
-            background: rgba(0, 169, 255, 0.15);
-            color: #00A9FF;
-            border-color: #00A9FF;
-            z-index: 1;
-        }
-
-        .score-btn.win-black:active,
-        .score-btn.active-black {
-            background: rgba(255, 111, 0, 0.15);
-            color: #FF6F00;
-            border-color: #FF6F00;
-            z-index: 1;
-        }
-
-        .score-btn.draw:active,
+        .score-btn.draw:hover,
         .score-btn.active-draw {
             background: #27272a;
             color: white;
@@ -436,6 +418,25 @@
             .score-btn.win-black:hover { background: rgba(255, 111, 0, 0.15); color: #FF6F00; border-color: #FF6F00; z-index: 1; }
             .score-btn.draw:hover { background: #27272a; color: white; border-color: #52525b; z-index: 1; }
         }
+
+        /* Splash Screen Engine Animations */
+        @keyframes slideInLeftHalf {
+            0% { transform: translateX(-50px); opacity: 0; filter: blur(4px); }
+            70% { transform: translateX(2px); opacity: 1; filter: blur(0); }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes slideInRightHalf {
+            0% { transform: translateX(50px); opacity: 0; filter: blur(4px); }
+            70% { transform: translateX(-2px); opacity: 1; filter: blur(0); }
+            100% { transform: translateX(0); opacity: 1; }
+        }
+        @keyframes enginePulse {
+            0%, 100% { filter: drop-shadow(0 0 0 rgba(0,0,0,0)); }
+            50% { filter: drop-shadow(0 0 15px rgba(0, 169, 255, 0.2)); }
+        }
+        .splash-left { animation: slideInLeftHalf 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.2s; opacity: 0; }
+        .splash-right { animation: slideInRightHalf 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; animation-delay: 0.2s; opacity: 0; }
+        .splash-lock { animation: enginePulse 2s infinite ease-in-out; }
     </style>
 </head>
 
@@ -884,6 +885,66 @@
             return pairs;
         };
 
+        // --- SPLASH SCREEN ENGINE ---
+        const SplashScreen = ({ onComplete }) => {
+            const [progress, setProgress] = useState(0);
+            const [logs, setLogs] = useState([]);
+            const [fading, setFading] = useState(false);
+
+            useEffect(() => {
+                const bootSequence = [
+                    { time: 100, log: "[SYS] Initiating Monolith Director Engine...", prog: 8 },
+                    { time: 400, log: "[MEM] Allocating competitive matrices...", prog: 24 },
+                    { time: 700, log: "[ENG] Synchronizing FIDE standard algorithms...", prog: 45 },
+                    { time: 1000, log: "[ENG] Mounting Knockout & Round-Robin modules...", prog: 62 },
+                    { time: 1300, log: "[SEC] Verifying Luminous Palette protocols...", prog: 78 },
+                    { time: 1600, log: "[UI] Rendering core interfaces...", prog: 92 },
+                    { time: 1900, log: "[SYS] Lock-in complete. Stand by.", prog: 100 },
+                ];
+
+                let timeouts = [];
+                bootSequence.forEach(({ time, log, prog }) => {
+                    timeouts.push(setTimeout(() => {
+                        setLogs(prev => [...prev, log].slice(-4)); // Display last 4 logs
+                        setProgress(prog);
+                    }, time));
+                });
+
+                timeouts.push(setTimeout(() => setFading(true), 2500));
+                timeouts.push(setTimeout(() => onComplete(), 3000));
+
+                return () => timeouts.forEach(clearTimeout);
+            }, [onComplete]);
+
+            return (
+                <div className={`fixed inset-0 z-[9999] bg-[#09090b] flex flex-col items-center justify-center transition-opacity duration-500 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+                    
+                    {/* The Lock-in Center */}
+                    <div className="relative w-56 h-56 md:w-80 md:h-80 flex items-center justify-center splash-lock">
+                        {/* Left Half (Sky Blue) */}
+                        <img src="logo.png" alt="Monolith Left" className="absolute w-full h-full object-contain splash-left" style={{ clipPath: 'inset(0 50% 0 0)' }} />
+                        {/* Right Half (Bright Orange) */}
+                        <img src="logo.png" alt="Monolith Right" className="absolute w-full h-full object-contain splash-right" style={{ clipPath: 'inset(0 0 0 50%)' }} />
+                    </div>
+
+                    {/* Terminal Logs */}
+                    <div className="absolute bottom-8 left-6 md:left-8 font-mono text-[10px] md:text-xs text-[#a1a1aa] flex flex-col justify-end h-20 overflow-hidden leading-tight opacity-70">
+                        {logs.map((log, i) => (
+                            <div key={i} className="animate-slide-up">{log}</div>
+                        ))}
+                    </div>
+
+                    {/* The Apex Bar */}
+                    <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[#18181b]">
+                        <div 
+                            className="h-full bg-gradient-to-r from-[#00A9FF] to-[#FF6F00] transition-all ease-out" 
+                            style={{ width: `${progress}%`, transitionDuration: '300ms' }}
+                        ></div>
+                    </div>
+                </div>
+            );
+        };
+
         // --- COMPONENTS ---
         const Toast = ({ notification, onClose }) => {
             if (!notification) return null;
@@ -1122,6 +1183,7 @@
         };
 
         const App = () => {
+            const [isBooting, setIsBooting] = useState(true);
             const [view, setView] = useState('settings');
             const [lang, setLang] = useState('en');
             const [theme, setTheme] = useState('dark');
@@ -1148,6 +1210,7 @@
             const stats = useMemo(() => {
                 let s = players.map(p => ({ ...p, score: 0, games: 0, wins: 0, draws: 0, loss: 0, bh: 0, bhCut1: 0, sb: 0, deScore: 0, history: [], colorHistory: [], oppScores: [], floatHistory: [], unplayedGames: 0 }));
                 rounds.forEach(r => {
+                    // Evaluate float directions *before* score is mutated for this round
                     r.pairings.forEach(m => {
                         let w = s.find(p => p.id === m.white.id); let b = m.black ? s.find(p => p.id === m.black.id) : null;
                         if (w && b) {
@@ -1176,9 +1239,11 @@
                     });
                 });
 
+                // Calculate Tie-Break virtual scores for Buchholz before applying to oppScores
                 s.forEach(p => {
                     p.tieBreakScore = p.score;
                     if (p.unplayedGames > 0 && settings.tieBreak !== 'direct') {
+                        // FIDE: remove the won point from unplayed/BYE and add 0.5 instead for opponent evaluation
                         p.tieBreakScore -= (p.unplayedGames * 0.5);
                     }
                 });
@@ -1202,11 +1267,11 @@
                                 let unplayedRoundCount = Math.max(0, totalRounds - r.number);
                                 let virtualScore = scoreBeforeBye + 0.5 + (0.5 * unplayedRoundCount);
                                 p.oppScores.push(virtualScore);
-                                p.sb += 0.5 * virtualScore; 
+                                p.sb += 0.5 * virtualScore; // FIDE C.04.5: Unplayed games are treated as a Draw against the Virtual Opponent
                             } else if (m.result) {
                                 let opp = s.find(x => x.id === (m.white.id === p.id ? m.black.id : m.white.id));
                                 if (opp) {
-                                    p.oppScores.push(opp.tieBreakScore); 
+                                    p.oppScores.push(opp.tieBreakScore); // FIDE Virtual opponent score
                                     if ((m.white.id === p.id && m.result === '1-0') || (m.black.id === p.id && m.result === '0-1')) p.sb += opp.tieBreakScore;
                                     else if (m.result === '0.5-0.5') p.sb += 0.5 * opp.tieBreakScore;
                                 }
@@ -1215,6 +1280,7 @@
                     });
                 });
 
+                // FIX: FIDE Multi-way Direct Encounter Calculator
                 s.forEach(p => {
                     p.deScore = 0;
                     let tiedOpps = s.filter(x => x.score === p.score && x.id !== p.id);
@@ -1266,6 +1332,7 @@
                         return { ...p, score: s.score, history: s.history, colorHistory: s.colorHistory, floatHistory: lastFloat, hasBye: s.history.some(h => h.oppId === 'BYE') };
                     });
 
+                // Extra layer of initial sorting inside ranking pool includes title priority.
                 logicP.sort((a, b) => b.score - a.score || b.rating - a.rating || TITLE_RANKS[b.title || ''] - TITLE_RANKS[a.title || ''] || (a.name || '').localeCompare(b.name || ''));
 
                 let n = logicP.length;
@@ -1384,16 +1451,17 @@
             };
 
             return (
-                <div className="flex h-[100dvh] bg-monolith-bg text-monolith-text transition-colors duration-300">
+                <div className="flex h-screen bg-monolith-bg text-monolith-text transition-colors duration-300">
+                    {isBooting && <SplashScreen onComplete={() => setIsBooting(false)} />}
                     <Toast notification={notif} onClose={() => setNotif(null)} />
 
                     {/* Desktop Sidebar */}
                     <aside className="hidden md:flex w-64 bg-monolith-panel border-e border-monolith-border flex-col shadow-lg z-20">
-                        <div className="p-6 border-b border-monolith-border">
-                            <h1 className="text-xl font-bold tracking-wider animate-fade-in">CHESS <span className="text-monolith-blue">DIRECTOR</span></h1>
-                            <div className="flex items-center gap-2 mt-2">
+                        <div className="p-6 border-b border-monolith-border flex flex-col items-center justify-center">
+                            <img src="logo.png" alt="Chess Director" className="max-h-20 w-auto object-contain animate-fade-in drop-shadow-md" />
+                            <div className="flex items-center justify-center gap-2 mt-4">
                                 <span className="text-xs text-monolith-text font-mono">V1.0</span>
-                                <span className="text-[10px] bg-monolith-orange text-white px-1.5 py-0.5 rounded font-bold tracking-wider">BETA</span>
+                                <span className="text-[10px] bg-monolith-orange text-white px-2 py-0.5 rounded font-bold tracking-wider shadow-sm">BETA</span>
                             </div>
                         </div>
                         <nav className="flex-1 p-4 overflow-y-auto">
@@ -1411,12 +1479,13 @@
                             <button onClick={exportToJson} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-blue hover:text-monolith-blue">{I.Save} {t('save')}</button>
                             <input type="file" accept=".json" onChange={loadFromJson} className="hidden" id="imp" />
                             <button onClick={() => document.getElementById('imp').click()} className="w-full btn-secondary text-sm flex justify-center gap-2 hover:border-monolith-orange hover:text-monolith-orange">{I.Upload} {t('load')}</button>
+                            <div className="text-[10px] text-monolith-sub text-center pt-4 opacity-50 font-mono">
+                                © 2026 Developed by Adham Mohamed
+                            </div>
                         </div>
                     </aside>
 
-                    {/* Main Content Area */}
                     <main className="flex-1 flex flex-col overflow-hidden relative pb-[60px] md:pb-0">
-                        {/* Hidden Export Div */}
                         <div className="fixed top-0 left-[-9999px] w-[1200px]" ref={exportRef}>
                             <div className="bg-[#09090b] p-10 text-white min-h-screen">
                                 <h1 className="text-4xl font-bold mb-4">OFFICIAL TOURNAMENT REPORT</h1>
@@ -1427,9 +1496,12 @@
                             </div>
                         </div>
 
-                        {/* Top Header */}
-                        <header className="h-16 bg-monolith-panel border-b border-monolith-border flex items-center justify-between px-4 md:px-8 shadow-sm shrink-0">
-                            <div className="font-bold text-lg truncate flex-1">{settings.name || "Untitled Tournament"}</div>
+                        {/* Top Header - Mobile Logo Added */}
+                        <header className="h-16 bg-monolith-panel border-b border-monolith-border flex items-center justify-between px-4 md:px-8 shadow-sm animate-slide-up shrink-0">
+                            <div className="flex items-center gap-3 flex-1 overflow-hidden">
+                                <img src="logo.png" alt="Chess Director" className="h-8 md:h-10 w-auto object-contain md:hidden shrink-0" />
+                                <div className="font-bold text-lg truncate text-monolith-text">{settings.name || "Untitled Tournament"}</div>
+                            </div>
                             <div className="flex items-center gap-3">
                                 {/* Mobile Header Actions */}
                                 <div className="md:hidden flex items-center gap-2">
@@ -1442,31 +1514,29 @@
 
                         <div className="flex-1 overflow-auto p-4 md:p-8 custom-scrollbar">
                             {view === 'settings' && (
-                                <div key="settings" className="max-w-4xl mx-auto space-y-4 md:space-y-6 animate-fade-in">
-                                    {/* Settings Form */}
-                                    <div className={`grid grid-cols-1 ${settings.type === 'swiss' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-4 md:gap-6 bg-monolith-panel md:bg-transparent p-4 md:p-0 rounded border border-monolith-border md:border-0`}>
+                                <div key="settings" className="max-w-4xl mx-auto space-y-6 animate-fade-in">
+                                    <div className={`grid grid-cols-1 ${settings.type === 'swiss' ? 'md:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
                                         <div className="md:col-span-1">
-                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('tour_name')}</label>
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('tour_name')}</label>
                                             <input className="m-input" maxLength={49} value={settings.name} onChange={e => setSettings({ ...settings, name: e.target.value })} placeholder="..." />
                                         </div>
                                         <div>
-                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('sys_type')}</label>
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('sys_type')}</label>
                                             <CustomDropdown value={settings.type} onChange={e => setSettings({ ...settings, type: e.target.value })} options={[{ val: 'swiss', lbl: t('swiss') }, { val: 'ko', lbl: t('knockout') }, { val: 'rr', lbl: t('rr') }, { val: 'drr', lbl: t('drr') }]} />
                                         </div>
                                         {settings.type === 'swiss' && (
                                             <div>
-                                                <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('rounds_count')}</label>
+                                                <label className="block text-sm text-monolith-sub mb-2">{t('rounds_count')}</label>
                                                 <input type="number" className="m-input" value={settings.roundsCount} onChange={e => setSettings({ ...settings, roundsCount: parseInt(e.target.value) })} />
                                             </div>
                                         )}
                                         <div>
-                                            <label className="block text-xs md:text-sm text-monolith-sub mb-1 md:mb-2">{t('tie_break')}</label>
+                                            <label className="block text-sm text-monolith-sub mb-2">{t('tie_break')}</label>
                                             <CustomDropdown value={settings.tieBreak} onChange={e => setSettings({ ...settings, tieBreak: e.target.value })} options={[{ val: 'bh_cut1', lbl: t('bh_cut1') }, { val: 'bh', lbl: t('buchholz') }, { val: 'sb', lbl: t('sonneborn') }, { val: 'direct', lbl: t('direct') }]} />
                                             <p className="text-[11px] text-monolith-sub mt-2 opacity-80">{t(`desc_${settings.tieBreak === 'direct' ? 'de' : settings.tieBreak}`)}</p>
                                         </div>
                                     </div>
 
-                                    {/* Add Player Box */}
                                     <div className="bg-monolith-panel rounded border border-monolith-border overflow-hidden shadow-sm animate-slide-up">
                                         <div className="p-4 bg-monolith-bg border-b border-monolith-border flex gap-3 flex-wrap md:flex-nowrap">
                                             <input className="m-input md:flex-1 w-full" placeholder={t('pl_name')} value={pInput.name} onChange={e => setPInput({ ...pInput, name: e.target.value })} onKeyDown={e => e.key === 'Enter' && addPlayer()} />
@@ -1523,7 +1593,7 @@
                                             {players.length === 0 && <div className="text-center text-monolith-sub py-6 text-sm">No players added yet.</div>}
                                         </div>
                                     </div>
-
+                                    
                                     <div className="md:hidden flex gap-2">
                                         <button onClick={() => document.getElementById('imp').click()} className="btn-secondary flex-1 text-sm flex justify-center gap-2">{I.Upload} Load</button>
                                         <button onClick={exportToJson} className="btn-secondary flex-1 text-sm flex justify-center gap-2">{I.Save} Save</button>
@@ -1623,6 +1693,11 @@
                                     </div>
                                 </div>
                             )}
+
+                            {/* Mobile Copyright */}
+                            <div className="md:hidden text-[10px] text-monolith-sub text-center mt-8 pb-4 opacity-50 font-mono">
+                                © 2026 Developed by Adham Mohamed
+                            </div>
                         </div>
                     </main>
 
